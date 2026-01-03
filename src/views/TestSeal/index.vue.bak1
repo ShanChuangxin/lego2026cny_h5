@@ -1,0 +1,77 @@
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useTouchSystem } from '@/seal/useTouchSystem'
+import { useSealRecognizer } from '@/seal/useSealRecognizer'
+import { recordSeal } from '@/seal/useSealRecorder'
+import { sealConfig } from '@/seal/sealConfig'
+
+import sealImg from '@/assets/images/seal/seal.png'
+
+
+const containerRef = ref()
+
+const { activeTouchPoints } =
+  useTouchSystem(containerRef, sealConfig.touch)
+
+// 当前录入的指纹
+const fingerprint = ref<any>(null)
+
+// 录入状态
+const isRecording = ref(true)
+
+const {
+  isSealed,
+  sealCenter,
+  checkSeal
+} = useSealRecognizer(activeTouchPoints, fingerprint, sealConfig)
+
+// 监听触点变化
+watch(activeTouchPoints, (val) => {
+  console.log('当前触点：', val)
+  if (isRecording.value) {
+    const active =
+      activeTouchPoints.value.filter(p => p.isActive)
+
+    // 触点稳定后录入
+    if (active.length >= 3) {
+      const fp = recordSeal(active)
+      if (fp) {
+        fingerprint.value = fp
+        isRecording.value = false
+        console.log('印章指纹已录入:', fp)
+      }
+    }
+  } else {
+    checkSeal()
+  }
+}, { deep: true })
+</script>
+
+<template>
+  <div ref="containerRef" class="touch-area">
+    <div class="hint">
+      {{ isRecording ? '请盖一次印章进行录入' : '请盖章打卡' }}
+    </div>
+
+    <img
+      v-if="isSealed"
+      :src="sealImg"
+      class="seal"
+      :style="{
+        left: sealCenter.x + 'px',
+        top: sealCenter.y + 'px'
+      }"
+    />
+  </div>
+</template>
+
+<style>
+.touch-area {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: rgba(0,0,0,0.05);
+  touch-action: none;
+}
+</style>
+

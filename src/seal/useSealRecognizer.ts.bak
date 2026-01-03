@@ -1,0 +1,59 @@
+// 印章识别（核心算法）
+// 1. 当前触点数：3-5
+// 2. 点到中心距离结构约等于录入指纹
+// 3. 与旋转方向无关
+// 4. 返回一个印章中心坐标
+
+import { ref } from 'vue'
+import type { TouchPoint, SealFingerprint } from './types'
+import { config } from 'process'
+
+export function useSealRecognizer(
+  activeTouchPoints: any,
+  fingerprint: SealFingerprint,
+  config: any
+) {
+  const isSealed = ref(false)
+  const sealCenter = ref({ x: 0, y: 0 })
+
+  // const threshold = 0.15 // 误差容忍度（展会友好）
+  const threshold = config.recognition.diffThreshold
+
+  function checkSeal() {
+    const points: TouchPoint[] =
+      activeTouchPoints.value.filter(p => p.isActive)
+
+    if (points.length !== fingerprint.pointCount) return
+
+    const cx = points.reduce((s, p) => s + p.x, 0) / points.length
+    const cy = points.reduce((s, p) => s + p.y, 0) / points.length
+
+    const distances = points.map(p =>
+      Math.hypot(p.x - cx, p.y - cy)
+    )
+
+    const max = Math.max(...distances)
+
+    const normalized = distances
+      .map(d => d / max)
+      .sort((a, b) => a - b)
+
+    let diff = 0
+    for (let i = 0; i < normalized.length; i++) {
+      diff += Math.abs(normalized[i] - fingerprint.distances[i])
+    }
+
+    diff /= normalized.length
+
+    if (diff < threshold) {
+      isSealed.value = true
+      sealCenter.value = { x: cx, y: cy }
+    }
+  }
+
+  return {
+    isSealed,
+    sealCenter,
+    checkSeal
+  }
+}
