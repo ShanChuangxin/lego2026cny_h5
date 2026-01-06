@@ -4,12 +4,12 @@ import { useTouchSystem } from '@/seal/useTouchSystem'
 import { useSealRecognizer } from '@/seal/useSealRecognizer'
 import { recordSeal } from '@/seal/useSealRecorder'
 import { sealConfig } from '@/seal/sealConfig'
-import sealImg from '@/assets/images/seal/seal.png'
+// import sealImg from '@/assets/images/seal/seal.png'
 
 const containerRef = ref<HTMLElement | null>(null)
 
-const { activeTouchPoints } =
-  useTouchSystem(containerRef, sealConfig.touch)
+// const { activeTouchPoints } =
+//   useTouchSystem(containerRef, sealConfig.touch)
 
 // 印章指纹
 const fingerprint = ref<any>(null)
@@ -22,47 +22,47 @@ let recordBuffer: any[] = []
 let recordTimer: number | null = null
 let checkTimer: number | null = null
 
-const {
-  isSealed,
-  sealCenter,
-  checkSeal
-} = useSealRecognizer(activeTouchPoints, fingerprint, sealConfig)
+// const {
+//   isSealed,
+//   sealCenter,
+//   checkSeal
+// } = useSealRecognizer(activeTouchPoints, fingerprint, sealConfig)
 
 // 监听触点变化
-watch(activeTouchPoints, () => {
-  const active =
-    activeTouchPoints.value.filter(p => p.isActive)
+// watch(activeTouchPoints, () => {
+//   const active =
+//     activeTouchPoints.value.filter(p => p.isActive)
 
-  // === 录入阶段 ===
-  if (isRecording.value) {
-    if (active.length >= sealConfig.record.minPoints) {
-      recordBuffer.push(...active)
+//   // === 录入阶段 ===
+//   if (isRecording.value) {
+//     if (active.length >= sealConfig.record.minPoints) {
+//       recordBuffer.push(...active)
 
-      if (!recordTimer) {
-        recordTimer = window.setTimeout(() => {
-          const fp = recordSeal(recordBuffer)
-          if (fp) {
-            fingerprint.value = fp
-            isRecording.value = false
-            console.log('印章指纹录入完成:', fp)
-          }
-          recordBuffer = []
-          recordTimer = null
-        }, sealConfig.record.sampleTime)
-      }
-    }
-  }
+//       if (!recordTimer) {
+//         recordTimer = window.setTimeout(() => {
+//           const fp = recordSeal(recordBuffer)
+//           if (fp) {
+//             fingerprint.value = fp
+//             isRecording.value = false
+//             console.log('印章指纹录入完成:', fp)
+//           }
+//           recordBuffer = []
+//           recordTimer = null
+//         }, sealConfig.record.sampleTime)
+//       }
+//     }
+//   }
 
-  // === 识别阶段 ===
-  else {
-    if (!checkTimer) {
-      checkTimer = window.setTimeout(() => {
-        checkSeal()
-        checkTimer = null
-      }, sealConfig.recognize.stableTime)
-    }
-  }
-}, { deep: true })
+//   // === 识别阶段 ===
+//   else {
+//     if (!checkTimer) {
+//       checkTimer = window.setTimeout(() => {
+//         checkSeal()
+//         checkTimer = null
+//       }, sealConfig.recognize.stableTime)
+//     }
+//   }
+// }, { deep: true })
 </script>
 
 <template>
@@ -71,7 +71,7 @@ watch(activeTouchPoints, () => {
       {{ isRecording ? '请盖一次印章进行录入' : '请盖章打卡' }}
     </div>
 
-    <img
+    <!-- <img
       v-if="isSealed"
       :src="sealImg"
       class="seal"
@@ -79,7 +79,7 @@ watch(activeTouchPoints, () => {
         left: sealCenter.x + 'px',
         top: sealCenter.y + 'px'
       }"
-    />
+    /> -->
   </div>
 </template>
 
