@@ -3,15 +3,64 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Toast } from 'vant'
 import vueQr from 'vue-qr/src/packages/vue-qr.vue'
+import { getUserInfoAPI, stampCheckAPI, stampStatusAPI, withdrawAPI, clearDrawInfoAPI } from '@/apis/user'
+import type { UserInfo } from '@/types/user'
+import chapter from "../../components/chapter.vue";
 
 // 城市信息相关
 const cityList = ["广州", "上海", "北京", "重庆", "郑州", "线上"];
-const currentList = "";
+const currentCity = ref("");
+// 定义用户信息
+let auth_code = "";
+// let user_id = "";
+// let uqr_code = ""; // 注意这是用户的qrcode，不是打卡页面的qrcode
+// let draw_time = "";
+// let draw_status = 0;  // 所抽的奖品等级，1-5代表着1-5等奖
 
+const userInfo = ref<UserInfo>()
+
+// 通过url参数获取用户信息
 const route = useRoute();
-onMounted(() => {
-  console.log(route.query);
-});
+const loadUserInfo = async () => {
+    console.log("获取的参数信息为：", route.query);
+    if (route.query.authCode) {
+        auth_code = route.query.authCode as string;
+        console.log("auth_code: ", auth_code);
+        const res = await getUserInfoAPI({ auth_code});           
+        console.log(res);
+        if (res.data.errcode == 0) {
+            userInfo.value = res.data.data;
+            qrCode.value = res.data.data.qr_code;
+            // 状态记录
+            userInfo.value.user_id = res.data.data.user_id;
+            userInfo.value.qr_code = res.data.data.qr_code;
+            userInfo.value.draw_time = res.data.data.draw_time.toString();
+            userInfo.value.draw_status = res.data.data.draw_status; // 所抽的奖品等级，1-5代表着1-5等奖
+            userInfo.value.verify_status = res.data.data.verify_status; // 是否核销
+            isNiceCheck.value = Boolean(res.data.data.position_time_1);
+            isPetCheck.value = Boolean(res.data.data.position_time_2);
+            isRiskCheck.value = Boolean(res.data.data.position_time_3);
+            isCarCheck.value = Boolean(res.data.data.position_time_4);
+            // 页面记录同步
+            if (userInfo.value.draw_status != 0) {  // 百分百中奖，0为未抽奖
+              // 1. 更新中奖弹窗信息
+              alreadyLucyDraw.value = true; // 打开中奖弹窗
+              // undo // 更新弹窗内容
+              // 2. 跳转到抽奖页面
+              navigateToPage(4);
+            } else if (!isCarCheck && !isPetCheck && !isRiskCheck && !isCarCheck) { // 没有打过任何打卡点，跳到首页
+              navigateToPage(0);  // 跳转到首页
+            } else {
+              navigateToPage(2);  // 跳转到地图页面
+            }
+        } else {
+            Toast(res.data.errmsg);
+        }
+    } else {
+        Toast("参数不正确，请重新点击链接进入~");
+    }
+}
+onMounted(() => loadUserInfo());
 
 // 定义页面元素
 const pageNum = ref(0)  
@@ -29,15 +78,24 @@ function navigateToPage(page) {
 // 印章页面相关功能
 let stampPageIndex = 1;  // 印章界面索引
 const isShowCheckRule = ref(false);  // 是否显示印章打卡页面规则
-const isNiceCheck = ref(true); //   已盖章-有好事
-const isPetCheck = ref(true); //   已盖章-有宠物
-const isRiskCheck = ref(true); //   已盖章-大冒险
-const isCarCheck = ref(true); //   已盖章-提新车
+const isNiceCheck = ref(false); //   已盖章-有好事
+const isPetCheck = ref(false); //   已盖章-有宠物
+const isRiskCheck = ref(false); //   已盖章-大冒险
+const isCarCheck = ref(false); //   已盖章-提新车
 // 定义qrcode相关信息
 const qrCode = ref('')  // 二维码的值
 const qrCodeSize = ref(180) // 码的黑色块尺寸
 const qrCodeMargin = ref(0)
 const isShowBackupQrCode = ref(false); // 是否显示备用打卡二维码
+// 电子印章相关信息
+const fffImg = ref<string>(""); // 未盖章完成的图片，应该是用不到
+const blackImg = ref<string>("https://www.mbcstyle.cn/projects/test-static/seal.png");  // 印戳图片
+const arrAy = ref<any>([1, 1.0075192724740782, 1.0111229484707331, 1.069166113052584, 1.1348035748452034, 1.4507467151160764, 1.5075372936197426, 1.7161704869389864, 1.754161213064937, 1.9332532130008513]);  // 电子印章数据特征
+// 盖章完成方法
+const adoptFn = async () => {
+  // TODO: 盖章完成方法
+  console.log("盖章完成");
+};
 // 切换到印章页面函数
 function navigateToStampPage(page) {
   console.log("stamp page：" + page)
@@ -48,6 +106,41 @@ function navigateToStampPage(page) {
 // 切换显示打卡规则弹窗函数
 function switchShowCheckRule(isShowRule) {
   isShowCheckRule.value = isShowRule;
+}
+// 封装异步打卡函数
+const stampCheck = async () => {
+  const res = await stampCheckAPI({user_id: userInfo.value.user_id, position_num: stampPageIndex})
+  console.log(res);
+  // 不需要做处理，只是通知服务器该打卡点被打卡
+  // 有可能出现服务器没有同步的情况
+}
+// 盖印戳函数。这里应该是用电子印章
+function addStamp() {
+  // 1. 更新UI界面上的印戳
+  if (stampPageIndex == 1 && isNiceCheck.value == false) {
+    isNiceCheck.value = true;
+  } else if (stampPageIndex == 2 && isPetCheck.value == false) {
+    isPetCheck.value = true;
+  } else if (stampPageIndex == 3 && isRiskCheck.value == false) {
+    isRiskCheck.value = true;
+  } else if (stampPageIndex == 4 && isCarCheck.value == false) {
+    isCarCheck.value = true;
+  }
+  // 1. 向服务器同步打卡信息。这里有可能考虑先向服务器校验再出现印戳，但是可能印戳出现有延迟
+  stampCheck();
+}
+// 查询备用方案打卡结果
+const stampStatus = async () => {
+  const res = await stampStatusAPI({user_id: userInfo.value.user_id})
+  console.log(res);
+  if (res.data.errcode == 0) {
+    isNiceCheck.value = Boolean(res.data.data.position_time_1);
+    isPetCheck.value = Boolean(res.data.data.position_time_2);
+    isRiskCheck.value = Boolean(res.data.data.position_time_3);
+    isCarCheck.value = Boolean(res.data.data.position_time_4);
+  } else {
+    console.log(res.data.errmsg);
+  }
 }
 // 显示备用扫码打卡二维码
 function showBackupQrCode(isShowCode) {
@@ -62,7 +155,7 @@ function showBackupQrCode(isShowCode) {
   } else {
     // 重新从服务器拉取是否已经打卡状态
     console.log("隐藏二维码并从服务器拉取最新的打卡状态");
-    // undo  
+    stampStatus(); 
   }
 }
 
@@ -80,15 +173,26 @@ function navitageToLuckyDrawPage(){
 // 抽奖页面相关功能
 const alreadyLucyDraw = ref(false);  // 是否已经抽奖
 const isLuckyDog = ref(false);  // 是否中奖
+let enableDraw = true;// 定义是否允许点击抽奖，防止重复点击抽奖
 function startLuckyDraw() {
+  if (!enableDraw) return;
   console.log("开始抽奖");
 }
 
+// 封装清除用户打卡信息函数
+const clearDrawInfo = async () => {
+  const res = await clearDrawInfoAPI({user_id: userInfo.value.user_id})
+  if (res.data.errcode == 0) {
+    Toast("用户信息清除成功");
+  } else {
+    Toast(res.data.errmsg);
+  }
+}
 // 清除用户打信息并回到主页
 function clearUserCheckInfo() {
   console.log("清除用户信息并回到主页");
   // 1. 清除用户打卡信息
-  // Undo
+  clearDrawInfo()
   // 2. 回到主页
   navigateToPage(0);
 }
@@ -100,7 +204,11 @@ function clearUserCheckInfo() {
     <!-- 起始页面 -->
     <div v-show="pageNum==0" class="land-page">
       <!-- 活动时间和地点 -->
-      <div class="time-location"></div>
+      <div v-show="currentCity=='beijing'" class="beijing-time-location"></div>
+      <div v-show="currentCity=='shanghai'" class="shanghai-time-location"></div>
+      <div v-show="currentCity=='guangzhou'" class="guangzhou-time-location"></div>
+      <div v-show="currentCity=='chongqing'" class="chongqing-time-location"></div>
+      <div v-show="currentCity=='zhengzhou'" class="zhengzhou-time-location"></div>
       <!-- 按钮-马上开始 -->
       <div class="btn-start" @click="navigateToPage(2)"></div>
       <!-- 活动规则超链接 -->
@@ -170,13 +278,22 @@ function clearUserCheckInfo() {
       <div v-show="stampPageIndex==4" class="btn-car-title"></div>
       <!-- 规则介绍 -->
       <div class="link-ruler" @click="switchShowCheckRule(true)"></div>
-      <!-- 盖章区 -->
+      <!-- 盖章区，先以手指点击模拟为盖章 -->
       <div class="stamp-area">
         <div v-if="(stampPageIndex==1&&isNiceCheck)||(stampPageIndex==2&&isPetCheck)||(stampPageIndex==3&&isRiskCheck)||(stampPageIndex==4&&isCarCheck)" class="stamp-status-already"></div>
         <div v-else class="stamp-status-tip"></div>
       </div>
       <!-- 返回按钮 -->
       <div class="btn-back" @click="navigateToPage(2)"></div>
+      <!-- 电子印章识别区，需要4个打卡点，不同的识别区对应着不同的印戳 -->
+       <div class="stamped-area">
+        <chapter
+          :sImg="blackImg"
+          :bImg="fffImg"
+          :arrAy="arrAy"
+          @adoptFn="adoptFn"
+        />
+       </div>
       <!-- 印戳，四个不同的印戳 -->
       <div v-show="stampPageIndex==1 && isNiceCheck" class="stamp-nice"></div>
       <div v-show="stampPageIndex==2 && isPetCheck" class="stamp-pet"></div>
@@ -248,7 +365,47 @@ function clearUserCheckInfo() {
     background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/bg.jpg") top center no-repeat;
     background-size: cover;
     // 活动时间和地点
-    .time-location {
+    .beijing-time-location {
+      position: absolute;
+      margin-top: .65rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 1.3533rem;
+      height: .3266rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      background-size: 100% 100%;
+    }
+    .shanghai-time-location {
+      position: absolute;
+      margin-top: .65rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 1.3533rem;
+      height: .3266rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      background-size: 100% 100%;
+    }
+    .guangzhou-time-location {
+      position: absolute;
+      margin-top: .65rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 1.3533rem;
+      height: .3266rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      background-size: 100% 100%;
+    }
+    .chongqing-time-location {
+      position: absolute;
+      margin-top: .65rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 1.3533rem;
+      height: .3266rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      background-size: 100% 100%;
+    }
+    .zhengzhou-time-location {
       position: absolute;
       margin-top: .65rem;
       margin-left: 50%;
@@ -352,7 +509,7 @@ function clearUserCheckInfo() {
       height: 1.1933rem;
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/slogan.png") top center no-repeat;
       background-size: 100% 100%; 
-        .btn-clear {
+      .btn-clear {
         position: absolute;
         top: .34rem;
         left: 0rem;
@@ -470,9 +627,7 @@ function clearUserCheckInfo() {
           background-size: 100% 100%; 
         }
       }
-
     }
-
   }
 
   // 盖章打卡页面
