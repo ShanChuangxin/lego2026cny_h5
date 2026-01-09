@@ -8,7 +8,7 @@
           width: stampedWidth,
           height: stampedHeight,
           backgroundImage: `url(${stampedBg})`,
-          backgroundColor: stampedBgColor,
+          // backgroundColor: stampedBgColor,
         }"
       >
         <div class="chapter_style">

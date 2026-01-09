@@ -89,12 +89,14 @@ const qrCodeMargin = ref(0)
 const isShowBackupQrCode = ref(false); // 是否显示备用打卡二维码
 // 电子印章相关信息
 const fffImg = ref<string>(""); // 未盖章完成的图片，应该是用不到
-const blackImg = ref<string>("https://www.mbcstyle.cn/projects/test-static/seal.png");  // 印戳图片
+const blackImg = ref<string>("");  // 印戳图片，但是设置为空，因为不使用电子印章SDK组件的印戳渲染，只使用盖章成功的回调函数
+const errorNumber = ref(0.009); // 0-1，数字越小，检查越严格
 const arrAy = ref<any>([1, 1.0075192724740782, 1.0111229484707331, 1.069166113052584, 1.1348035748452034, 1.4507467151160764, 1.5075372936197426, 1.7161704869389864, 1.754161213064937, 1.9332532130008513]);  // 电子印章数据特征
 // 盖章完成方法
 const adoptFn = async () => {
   // TODO: 盖章完成方法
   console.log("盖章完成");
+  addStamp(); // 盖印章。注意，只使用了电子印章的SDK印章成功r的r回调，但是不使用SDK中的渲染印戳图片功能
 };
 // 切换到印章页面函数
 function navigateToStampPage(page) {
@@ -171,13 +173,69 @@ function navitageToLuckyDrawPage(){
 }
 
 // 抽奖页面相关功能
+const TOTAL = 9;  // 转盘总共平均分成了9个部分
+const ANGLE_PER = 360 / TOTAL;  // 每个部分所占角度：40
+const prizeLayout = [ // 游戏转盘布局
+  '一等奖', // 0
+  '五等奖', // 1
+  '四等奖', // 2
+  '三等奖', // 3
+  '五等奖', // 4
+  '二等奖', // 5
+  '五等奖', // 6
+  '四等奖', // 7
+  '五等奖'  // 8
+]
+const prizeIndexMap = [ // 奖项->index数组映射
+  [0],
+  [5],
+  [3],
+  [2, 7],
+  [1, 4, 6, 8]
+]
+// 随机选择一个合法的位置，因为有的奖项是多个位置
+function randomFromArray<T>(arr: T[]): T {  
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+// 旋转逻辑，默认至少旋转7圈
+function spinTo(prizeIndex: number, round=7) {
+  const angle = 360 * round + prizeIndex * ANGLE_PER + ANGLE_PER / 2;
+  console.log("angle:", angle);
+  rotateDeg.value += angle;
+}
+// 抽奖
+async function draw() {
+  if (isSpinning.value) return; // 如果在抽奖，则点击没有反应
+  console.log("开始旋转抽奖转盘");
+  isSpinning.value = true;
+
+  // 后端只返回奖项类型
+  // undo
+  const prizeType = 4;  // mock
+
+  // 从该奖项的多个位置中随机一个
+  const indexList = prizeIndexMap[prizeType - 1];
+  const prizeIndex = randomFromArray(indexList);
+  console.log(prizeIndex);
+  spinTo(prizeIndex);
+}
+// 旋转完回调
+function onSpinEnd() {
+  // 重新打开旋转开关
+  isSpinning.value = false;
+  // 显示中奖弹窗
+}
+
 const alreadyLucyDraw = ref(false);  // 是否已经抽奖
 const isLuckyDog = ref(false);  // 是否中奖
-let enableDraw = true;// 定义是否允许点击抽奖，防止重复点击抽奖
-function startLuckyDraw() {
-  if (!enableDraw) return;
-  console.log("开始抽奖");
-}
+// let enableDraw = true;// 定义是否允许点击抽奖，防止重复点击抽奖
+const rotateDeg = ref(0); // 旋转角度
+const isSpinning = ref(false);  // 是否开始旋转
+
+// function startLuckyDraw() {
+//   if (!enableDraw) return;
+//   console.log("开始抽奖");
+// }
 
 // 封装清除用户打卡信息函数
 const clearDrawInfo = async () => {
@@ -278,7 +336,7 @@ function clearUserCheckInfo() {
       <div v-show="stampPageIndex==4" class="btn-car-title"></div>
       <!-- 规则介绍 -->
       <div class="link-ruler" @click="switchShowCheckRule(true)"></div>
-      <!-- 盖章区，先以手指点击模拟为盖章 -->
+      <!-- 盖章区 -->
       <div class="stamp-area">
         <div v-if="(stampPageIndex==1&&isNiceCheck)||(stampPageIndex==2&&isPetCheck)||(stampPageIndex==3&&isRiskCheck)||(stampPageIndex==4&&isCarCheck)" class="stamp-status-already"></div>
         <div v-else class="stamp-status-tip"></div>
@@ -286,11 +344,12 @@ function clearUserCheckInfo() {
       <!-- 返回按钮 -->
       <div class="btn-back" @click="navigateToPage(2)"></div>
       <!-- 电子印章识别区，需要4个打卡点，不同的识别区对应着不同的印戳 -->
-       <div class="stamped-area">
+      <div class="stamped-area">
         <chapter
           :sImg="blackImg"
           :bImg="fffImg"
           :arrAy="arrAy"
+          :errorNumber="errorNumber"
           @adoptFn="adoptFn"
         />
        </div>
@@ -329,14 +388,14 @@ function clearUserCheckInfo() {
       <!-- 注意：这个背景图漏切了！！！-->
       <div class="turntable-container">
         <!-- 转盘 -->
-        <div class="turn-table"></div>
+        <div class="turn-table" :style="{transform:`rotate(${rotateDeg}deg)`}" @transitionend="onSpinEnd"></div>
         <!-- 转盘周围的装饰 -->
         <div class="turntable-figure"></div>
         <!-- 指针 -->
-        <div class="pointer" @click="startLuckyDraw"></div>
+        <div class="pointer" @click="draw"></div>
       </div>
       <!-- 开始抽奖按钮 -->
-      <div class="btn-luckydraw" @click="startLuckyDraw"></div>
+      <div class="btn-luckydraw" @click="draw"></div>
       <!-- 弹窗容器 -->
       <div v-show="alreadyLucyDraw" class="pop-container">
         <div v-if="isLuckyDog" class="pop-lucky"></div>
@@ -754,6 +813,14 @@ function clearUserCheckInfo() {
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/btn-back.png") top center no-repeat;
       background-size: 100% 100%; 
     }
+    .stamped-area {
+      position: absolute;
+      top: 3rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 4.12rem;
+      height: 4.5rem;
+    }
     .stamp-nice {
       position: absolute;
       top: 4.5rem;
@@ -902,6 +969,7 @@ function clearUserCheckInfo() {
         background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/turntable.png") top center no-repeat;
         background-size: 100% 100%;
         transform-origin: center center;
+        transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
       }
       .pointer {
         position: absolute;
