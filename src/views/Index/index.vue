@@ -9,7 +9,7 @@ import chapter from "../../components/chapter.vue";
 
 // 城市信息相关
 const cityList = ["广州", "上海", "北京", "重庆", "郑州", "线上"];
-const currentCity = ref("");
+const currentCity = ref("guangzhou");
 // 定义用户信息
 let auth_code = "";
 // let user_id = "";
@@ -78,19 +78,19 @@ function navigateToPage(page) {
 // 印章页面相关功能
 let stampPageIndex = 1;  // 印章界面索引
 const isShowCheckRule = ref(false);  // 是否显示印章打卡页面规则
-const isNiceCheck = ref(false); //   已盖章-有好事
-const isPetCheck = ref(false); //   已盖章-有宠物
-const isRiskCheck = ref(false); //   已盖章-大冒险
-const isCarCheck = ref(false); //   已盖章-提新车
+const isNiceCheck = ref(true); //   已盖章-有好事
+const isPetCheck = ref(true); //   已盖章-有宠物
+const isRiskCheck = ref(true); //   已盖章-大冒险
+const isCarCheck = ref(true); //   已盖章-提新车
 // 定义qrcode相关信息
 const qrCode = ref('')  // 二维码的值
 const qrCodeSize = ref(180) // 码的黑色块尺寸
 const qrCodeMargin = ref(0)
 const isShowBackupQrCode = ref(false); // 是否显示备用打卡二维码
 // 电子印章相关信息
-const fffImg = ref<string>(""); // 未盖章完成的图片，应该是用不到
+const fffImg = ref<string>(""); // 未盖章完成的图片
 const blackImg = ref<string>("");  // 印戳图片，但是设置为空，因为不使用电子印章SDK组件的印戳渲染，只使用盖章成功的回调函数
-const errorNumber = ref(0.009); // 0-1，数字越小，检查越严格
+const errorNumber = ref(0.1); // 0-1，数字越小，检查越严格。一般0.1
 const arrAy = ref<any>([1, 1.0075192724740782, 1.0111229484707331, 1.069166113052584, 1.1348035748452034, 1.4507467151160764, 1.5075372936197426, 1.7161704869389864, 1.754161213064937, 1.9332532130008513]);  // 电子印章数据特征
 // 盖章完成方法
 const adoptFn = async () => {
@@ -107,6 +107,7 @@ function navigateToStampPage(page) {
 }
 // 切换显示打卡规则弹窗函数
 function switchShowCheckRule(isShowRule) {
+  console.log("打开规则介绍");
   isShowCheckRule.value = isShowRule;
 }
 // 封装异步打卡函数
@@ -173,35 +174,68 @@ function navitageToLuckyDrawPage(){
 }
 
 // 抽奖页面相关功能
+// 北方城市（百分百中奖）
+const cityNorth = ref(["beijing", "shanghai", "zhengzhou"]);
+// 南方城市（有谢谢参与）
+const citySouth = ref(["chongqing", "guangzhou"]);
 const TOTAL = 9;  // 转盘总共平均分成了9个部分
 const ANGLE_PER = 360 / TOTAL;  // 每个部分所占角度：40
-const prizeLayout = [ // 游戏转盘布局
-  '一等奖', // 0
-  '五等奖', // 1
-  '四等奖', // 2
-  '三等奖', // 3
-  '五等奖', // 4
-  '二等奖', // 5
-  '五等奖', // 6
-  '四等奖', // 7
-  '五等奖'  // 8
+// 北京、上海、郑州游戏转盘布局
+// '一等奖', // 0
+// '五等奖', // 1
+// '四等奖', // 2
+// '三等奖', // 3
+// '五等奖', // 4
+// '二等奖', // 5
+// '五等奖', // 6
+// '四等奖', // 7
+// '五等奖'  // 8
+// 重庆、广州游戏转盘布局
+// '一等奖', // 0
+// '五等奖', // 1
+// '四等奖', // 2
+// '谢谢参与', // 3
+// '五等奖', // 4
+// '二等奖', // 5
+// '谢谢参与', // 6
+// '三等奖', // 7
+// '五等奖'  // 8
+
+const prizeIndexMapBjShZz = [ // 北京上海郑州奖项->index数组映射
+  [0],  // 一等奖
+  [5],  // 二等奖
+  [3],  // 三等奖
+  [2, 7], // 四等奖
+  [1, 4, 6, 8]  // 五等奖
 ]
-const prizeIndexMap = [ // 奖项->index数组映射
-  [0],
-  [5],
-  [3],
-  [2, 7],
-  [1, 4, 6, 8]
+const prizeIndexMapCqGz = [ // 重庆广州奖项->index数组映射
+  [0],  // 一等奖
+  [5],  // 二等奖
+  [7],  // 三等奖
+  [2], // 四等奖
+  [1, 4, 8],  // 五等奖
+  [3, 6]  // 谢谢参与
 ]
 // 随机选择一个合法的位置，因为有的奖项是多个位置
 function randomFromArray<T>(arr: T[]): T {  
   return arr[Math.floor(Math.random() * arr.length)]
 }
-// 旋转逻辑，默认至少旋转7圈
-function spinTo(prizeIndex: number, round=7) {
-  const angle = 360 * round + prizeIndex * ANGLE_PER + ANGLE_PER / 2;
-  console.log("angle:", angle);
-  rotateDeg.value += angle;
+// 两段式旋转
+function startSpin(prizeIndex: number) {
+  const current = rotateDeg.value % 360  // 当前真实角度
+
+  // 第一段：只做视觉加速
+  phase.value = 'accelerate'
+  rotateDeg.value += 360 * 2
+  console.log("旋转角度：", rotateDeg.value);
+  // 第二段
+  setTimeout(() => {
+    phase.value = 'decelerate'
+
+    const targetAngle = 360 * 4 - prizeIndex * ANGLE_PER
+
+    rotateDeg.value += targetAngle
+  }, 1400)
 }
 // 抽奖
 async function draw() {
@@ -211,16 +245,24 @@ async function draw() {
 
   // 后端只返回奖项类型
   // undo
-  const prizeType = 4;  // mock
+  const prizeType = 2;  // mock
+  console.log("当前抽的奖项为：", prizeType);
 
+  let indexList = [];
   // 从该奖项的多个位置中随机一个
-  const indexList = prizeIndexMap[prizeType - 1];
-  const prizeIndex = randomFromArray(indexList);
-  console.log(prizeIndex);
-  spinTo(prizeIndex);
+  if (cityNorth.value.includes(currentCity.value)){
+    indexList = prizeIndexMapBjShZz[prizeType - 1]; // 北方城市索引列表
+  } else {
+    indexList = prizeIndexMapCqGz[prizeType - 1]; // 南方城市索引列表
+  }
+  const prizeIndex = randomFromArray(indexList);  // 从该奖项列表里随机出转盘对应的某个索引
+  console.log("当前奖项所在转盘中的索引列表为：", indexList);
+  console.log("奖项随机到的索引值为：", prizeIndex);
+  startSpin(prizeIndex);
 }
 // 旋转完回调
 function onSpinEnd() {
+  console.log("旋转完成");
   // 重新打开旋转开关
   isSpinning.value = false;
   // 显示中奖弹窗
@@ -231,6 +273,7 @@ const isLuckyDog = ref(false);  // 是否中奖
 // let enableDraw = true;// 定义是否允许点击抽奖，防止重复点击抽奖
 const rotateDeg = ref(0); // 旋转角度
 const isSpinning = ref(false);  // 是否开始旋转
+const phase = ref<'idle' | 'accelerate' | 'decelerate'>('idle')
 
 // function startLuckyDraw() {
 //   if (!enableDraw) return;
@@ -297,19 +340,23 @@ function clearUserCheckInfo() {
         <div class="path-map">
           <!-- 马上有好事 -->
           <div class="btn-nice" @click="navigateToStampPage(1)">
-            <div v-show="true" class="nice-unlock"></div>
+            <div v-if="isNiceCheck" class="nice-unlock"></div>
+            <div v-else class="nice-lock"></div>
           </div>
           <!-- 马上有萌宠 -->
           <div class="btn-pet" @click="navigateToStampPage(2)">
-            <div v-show="true" class="pet-unlock"></div>
+            <div v-if="isPetCheck" class="pet-unlock"></div>
+            <div v-else class="pet-lock"></div>
           </div>
           <!-- 马上大冒险 -->
           <div class="btn-risk" @click="navigateToStampPage(3)">
-            <div v-show="true" class="risk-unlock"></div>
+            <div v-if="isRiskCheck" class="risk-unlock"></div>
+            <div v-else class="risk-lock"></div>
           </div>
           <!-- 马上提新车 -->
           <div class="btn-car" @click="navigateToStampPage(4)">
-            <div v-show="true" class="car-unlock"></div>
+            <div v-if="isCarCheck" class="car-unlock"></div>
+            <div v-else class="car-lock"></div>
           </div>
         </div>
         <!-- 抽奖按钮 -->
@@ -334,13 +381,13 @@ function clearUserCheckInfo() {
       <div v-show="stampPageIndex==2" class="btn-pet-title"></div>
       <div v-show="stampPageIndex==3" class="btn-risk-title"></div>
       <div v-show="stampPageIndex==4" class="btn-car-title"></div>
-      <!-- 规则介绍 -->
-      <div class="link-ruler" @click="switchShowCheckRule(true)"></div>
       <!-- 盖章区 -->
       <div class="stamp-area">
         <div v-if="(stampPageIndex==1&&isNiceCheck)||(stampPageIndex==2&&isPetCheck)||(stampPageIndex==3&&isRiskCheck)||(stampPageIndex==4&&isCarCheck)" class="stamp-status-already"></div>
         <div v-else class="stamp-status-tip"></div>
       </div>
+      <!-- 规则介绍 -->
+      <div class="link-ruler" @click="switchShowCheckRule(true)"></div>
       <!-- 返回按钮 -->
       <div class="btn-back" @click="navigateToPage(2)"></div>
       <!-- 电子印章识别区，需要4个打卡点，不同的识别区对应着不同的印戳 -->
@@ -388,7 +435,23 @@ function clearUserCheckInfo() {
       <!-- 注意：这个背景图漏切了！！！-->
       <div class="turntable-container">
         <!-- 转盘 -->
-        <div class="turn-table" :style="{transform:`rotate(${rotateDeg}deg)`}" @transitionend="onSpinEnd"></div>
+        <!-- 北方城市转盘 -->
+        <div v-show="cityNorth.includes(currentCity)" 
+          class="turn-table" 
+          :class="phase" 
+          style="--bg: url('https://www.mbcstyle.cn/projects/lego2026cny/images/draw/turntable-bj-sh-zz.png')"
+          :style="{transform:`rotate(${rotateDeg}deg)`}" 
+          @transitionend="onSpinEnd"
+          >
+        </div>
+        <!-- 南方城市转盘 -->
+        <div v-show="citySouth.includes(currentCity)" 
+          class="turn-table" 
+          :class="phase" 
+          style="--bg: url('https://www.mbcstyle.cn/projects/lego2026cny/images/draw/turntable-cq-gz.png')"
+          :style="{transform:`rotate(${rotateDeg}deg)`}" 
+          @transitionend="onSpinEnd">
+        </div>
         <!-- 转盘周围的装饰 -->
         <div class="turntable-figure"></div>
         <!-- 指针 -->
@@ -430,8 +493,8 @@ function clearUserCheckInfo() {
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.3533rem;
-      height: .3266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      height: .3066rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/beijing-time-location.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .shanghai-time-location {
@@ -439,9 +502,9 @@ function clearUserCheckInfo() {
       margin-top: .65rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 1.3533rem;
+      width: 1.38rem;
       height: .3266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/shanghai-time-location.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .guangzhou-time-location {
@@ -449,9 +512,9 @@ function clearUserCheckInfo() {
       margin-top: .65rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 1.3533rem;
-      height: .3266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      width: 1.38rem;
+      height: .3066rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/guangzhou-time-location.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .chongqing-time-location {
@@ -459,9 +522,9 @@ function clearUserCheckInfo() {
       margin-top: .65rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 1.3533rem;
-      height: .3266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      width: 1.62rem;
+      height: .3066rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/chongqing-time-location.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .zhengzhou-time-location {
@@ -469,9 +532,9 @@ function clearUserCheckInfo() {
       margin-top: .65rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 1.3533rem;
-      height: .3266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/time-location.png") top center no-repeat;
+      width: 1.2466rem;
+      height: .3066rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/zhengzhou-time-location.png") top center no-repeat;
       background-size: 100% 100%;
     }
     // 马上开始按钮
@@ -551,13 +614,13 @@ function clearUserCheckInfo() {
     position: relative;
     width: 100%;
     height: 100%;
-    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/bg.jpg") top center no-repeat;
+    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/bg.jpg") top center no-repeat;
     background-size: cover;
     .figure-bg {
       position: relative;
       width: 100%;
       height: 100%;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/figure-bg.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/figure-bg.png") top center no-repeat;
       background-size: cover;
       .icon-slogan {
       position: absolute;
@@ -566,7 +629,7 @@ function clearUserCheckInfo() {
       transform: translateX(-50%);
       width: 3.1066rem;
       height: 1.1933rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/slogan.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/slogan.png") top center no-repeat;
       background-size: 100% 100%; 
       .btn-clear {
         position: absolute;
@@ -582,48 +645,66 @@ function clearUserCheckInfo() {
         top: 2.2rem;
         margin-left: 50%;
         transform: translateX(-50%);
-        width: 4.08rem;
-        height: 5.9466rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/path-map.png") top center no-repeat;
+        width: 3.68rem;
+        height: 5.6266rem;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/path.png") top center no-repeat;
         background-size: 100% 100%; 
         .btn-nice {
           position: absolute;
-          top: 0rem;
-          left: 0rem;
+          top: -.28rem;
+          left: -.39rem;
           width: 2rem;
           height: .8rem;
-          // background-color: pink;
+          // background-color: rgba(0, 255, 0, .5);
           .nice-unlock {
             position: absolute;
             top: 0rem;
             left: 0rem;
             width:.96rem;
             height: .78rem;
-            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/icon-unlock-nice.png") top center no-repeat;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/icon-nice.png") top center no-repeat;
+            background-size: 100% 100%; 
+          }
+          .nice-lock {
+            position: absolute;
+            top: 0rem;
+            left: 0rem;
+            width:.96rem;
+            height: .78rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/bg-horse.png") top center no-repeat;
             background-size: 100% 100%; 
           }
         }
         .btn-pet {
           position: absolute;
-          top: 1.32rem;
+          top: 1.04rem;
           right: 0rem;
           width: 2rem;
           height: .8rem;
-          // background-color: pink;
+          // background-color: rgba(0, 255, 0, .5);
           .pet-unlock {
             position: absolute;
             top: 0rem;
             left: 0rem;
             width:.96rem;
             height: .78rem;
-            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/icon-unlock-pet.png") top center no-repeat;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/icon-pet.png") top center no-repeat;
+            background-size: 100% 100%; 
+          }
+          .pet-lock {
+            position: absolute;
+            top: 0rem;
+            left: 0rem;
+            width:.96rem;
+            height: .78rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/bg-horse.png") top center no-repeat;
             background-size: 100% 100%; 
           }
         }
         .btn-risk {
           position: absolute;
-          top: 2.49rem;
-          left: 0rem;
+          top: 2.2rem;
+          left: -.39rem;
           width: 2rem;
           height: .8rem;
           // background-color: pink;
@@ -633,13 +714,22 @@ function clearUserCheckInfo() {
             left: 0rem;
             width:.96rem;
             height: .78rem;
-            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/icon-unlock-risk.png") top center no-repeat;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/icon-risk.png") top center no-repeat;
+            background-size: 100% 100%; 
+          }
+          .risk-lock {
+            position: absolute;
+            top: 0rem;
+            left: 0rem;
+            width:.96rem;
+            height: .78rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/bg-horse.png") top center no-repeat;
             background-size: 100% 100%; 
           }
         }
         .btn-car {
           position: absolute;
-          top: 3.95rem;
+          top: 3.65rem;
           right: 0rem;
           width: 2rem;
           height: .8rem;
@@ -650,7 +740,16 @@ function clearUserCheckInfo() {
             left: 0rem;
             width:.96rem;
             height: .78rem;
-            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/icon-unlock-car.png") top center no-repeat;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/icon-car.png") top center no-repeat;
+            background-size: 100% 100%; 
+          }
+          .car-lock {
+            position: absolute;
+            top: 0rem;
+            left: 0rem;
+            width:.96rem;
+            height: .78rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/bg-horse.png") top center no-repeat;
             background-size: 100% 100%; 
           }
         }
@@ -662,7 +761,7 @@ function clearUserCheckInfo() {
         transform: translateX(-50%);
         width: 2.1866rem;
         height: 1.1066rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/btn-luckydraw.png") top center no-repeat;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/btn-luckydraw.png") top center no-repeat;
         background-size: 100% 100%; 
         padding-left: .2rem;  // 为了把锁的状态居中后往右移一些
         .lock-status {
@@ -671,8 +770,8 @@ function clearUserCheckInfo() {
           margin-left: 50%;
           transform: translateX(-50%);
           width: .18rem;
-          height: .28rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/icon-lock.png") top center no-repeat;
+          height: .2733rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/icon-lock.png") top center no-repeat;
           background-size: 100% 100%; 
         }
         .unlock-status {
@@ -680,9 +779,9 @@ function clearUserCheckInfo() {
           top: .15rem;
           margin-left: 50%;
           transform: translateX(-50%);
-          width: .2133rem;
-          height: .28rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check-map/icon-unlock.png") top center no-repeat;
+          width: .4rem;
+          height: .3133rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/map/icon-unlock.png") top center no-repeat;
           background-size: 100% 100%; 
         }
       }
@@ -694,15 +793,15 @@ function clearUserCheckInfo() {
     position: relative;
     width: 100%;
     height: 100%;
-    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/bg.jpg") top center no-repeat;
+    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/bg.jpg") top center no-repeat;
     background-size: cover;
     .figure-horse {
       position: absolute;
       left: 0;
       bottom: 0;
-      width: 2.94rem;
-      height: 2.9266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/figure-horse.png") top center no-repeat;
+      width: 2.9533rem;
+      height: 2.9333rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/figure-horse.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .icon-slogan {
@@ -712,7 +811,7 @@ function clearUserCheckInfo() {
       transform: translateX(-50%);
       width: 3.1066rem;
       height: 1.1933rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/slogan.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/slogan.png") top center no-repeat;
       background-size: 100% 100%;
       .btn-backup {
         position: absolute;
@@ -729,7 +828,7 @@ function clearUserCheckInfo() {
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.7266rem;
-      height: .43rem;
+      height: .42rem;
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/btn-nice.png") top center no-repeat;
       background-size: 100% 100%; 
     }
@@ -739,7 +838,7 @@ function clearUserCheckInfo() {
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.7266rem;
-      height: .43rem;
+      height: .42rem;
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/btn-pet.png") top center no-repeat;
       background-size: 100% 100%; 
     }
@@ -749,7 +848,7 @@ function clearUserCheckInfo() {
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.7266rem;
-      height: .43rem;
+      height: .42rem;
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/btn-risk.png") top center no-repeat;
       background-size: 100% 100%; 
     }
@@ -759,7 +858,7 @@ function clearUserCheckInfo() {
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.7266rem;
-      height: .43rem;
+      height: .42rem;
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/btn-car.png") top center no-repeat;
       background-size: 100% 100%; 
     }
@@ -775,19 +874,19 @@ function clearUserCheckInfo() {
     }
     .stamp-area {
       position: absolute;
-      top: 3rem;
+      top: 2.6rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 4.12rem;
-      height: 5.0333rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/stamp-area-no-font.png") top center no-repeat;
+      width: 4.1933rem;
+      height: 5.68rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/stamp-area.png") top center no-repeat;
       background-size: 100% 100%; 
       .stamp-status-already {
         position: absolute;
         bottom: .1rem;
         margin-left: 50%;
         transform: translateX(-50%);
-        width: .6rem;
+        width: .5866rem;
         height: .1866rem;
         background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/character-stamp-already.png") top center no-repeat;
         background-size: 100% 100%; 
@@ -797,7 +896,7 @@ function clearUserCheckInfo() {
         bottom: .1rem;
         margin-left: 50%;
         transform: translateX(-50%);
-        width: .6rem;
+        width: .6066rem;
         height: .1866rem;
         background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/character-stamp-area.png") top center no-repeat;
         background-size: 100% 100%; 
@@ -815,7 +914,7 @@ function clearUserCheckInfo() {
     }
     .stamped-area {
       position: absolute;
-      top: 3rem;
+      top: 3.5rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 4.12rem;
@@ -823,7 +922,7 @@ function clearUserCheckInfo() {
     }
     .stamp-nice {
       position: absolute;
-      top: 4.5rem;
+      top: 4.8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 2.3533rem;
@@ -833,7 +932,7 @@ function clearUserCheckInfo() {
     }
     .stamp-pet {
       position: absolute;
-      top: 4.5rem;
+      top: 4.8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 2.3533rem;
@@ -843,7 +942,7 @@ function clearUserCheckInfo() {
     }
     .stamp-risk {
       position: absolute;
-      top: 4.5rem;
+      top: 4.8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 2.3533rem;
@@ -853,7 +952,7 @@ function clearUserCheckInfo() {
     }
     .stamp-car {
       position: absolute;
-      top: 4.5rem;
+      top: 4.8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 2.3533rem;
@@ -873,7 +972,7 @@ function clearUserCheckInfo() {
       align-items: center;
       .pop-nice-rule {
         width: 4.2466rem;
-        height: 2.58rem;
+        height: 2.8066rem;
         background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/ruler-nice.png") top center no-repeat;
         background-size: 100% 100%; 
       }
@@ -885,13 +984,13 @@ function clearUserCheckInfo() {
       }
       .pop-risk-rule {
         width: 4.2466rem;
-        height: 2.3266rem;
+        height: 2.0933rem;
         background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/ruler-risk.png") top center no-repeat;
         background-size: 100% 100%; 
       }
       .pop-car-rule {
         width: 4.2466rem;
-        height: 2.58rem;
+        height: 1.86rem;
         background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/ruler-car.png") top center no-repeat;
         background-size: 100% 100%; 
       }
@@ -907,9 +1006,10 @@ function clearUserCheckInfo() {
       justify-content: center;
       align-items: center;
       .qrcode-area {
-          width: 2.6rem;
-          height: 2.6rem;
-          background-color: white;
+          width: 4.2733rem;
+          height: 3.8rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/stamp/bg-qrcode.png") top center no-repeat;
+          background-size: 100% 100%; 
           display: flex;
           align-items: center;
           justify-content: center;
@@ -922,15 +1022,15 @@ function clearUserCheckInfo() {
     position: relative;
     width: 100%;
     height: 100%;
-    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/bg.jpg") top center no-repeat;
+    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/bg.jpg") top center no-repeat;
     background-size: cover;
     .figure-horse {
       position: absolute;
       left: 0;
       bottom: 0;
-      width: 2.94rem;
-      height: 2.9266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/figure-horse.png") top center no-repeat;
+      width: 2.9533rem;
+      height: 2.9333rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/figure-horse.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .icon-slogan {
@@ -940,7 +1040,7 @@ function clearUserCheckInfo() {
       transform: translateX(-50%);
       width: 3.1066rem;
       height: 1.1933rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/slogan.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/slogan.png") top center no-repeat;
       background-size: 100% 100%;
       .btn-clear {
         position: absolute;
@@ -956,9 +1056,9 @@ function clearUserCheckInfo() {
       top: 2rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 4.7266rem; 
-      height: 4.78rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/figure-turntable.png") top center no-repeat;
+      width: 4.82rem; 
+      height: 4.5rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-turntable.png") top center no-repeat;
       background-size: 100% 100%;
       .turn-table {
         position: absolute;
@@ -966,10 +1066,17 @@ function clearUserCheckInfo() {
         left: .93rem;
         width: 3.1066rem;
         height: 3.1066rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/turntable.png") top center no-repeat;
+        // background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/turntable-bj-sh-zz.png") top center no-repeat;
+        background: var(--bg) top center no-repeat;
         background-size: 100% 100%;
         transform-origin: center center;
-        transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+        // transition: transform 5s cubic-bezier(0.22, 1, 0.36, 1);
+        &.accelerate {
+          transition: transform 1.4s cubic-bezier(0.4, 0, 1, 1);
+        }
+        &.decelerate {
+          transition: transform 5.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
       }
       .pointer {
         position: absolute;
@@ -977,7 +1084,7 @@ function clearUserCheckInfo() {
         left: 2.09rem;
         width: .7866rem;
         height: 1rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/pointer.png") top center no-repeat;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/pointer.png") top center no-repeat;
         background-size: 100% 100%;
         z-index: 1;
       }
@@ -987,7 +1094,7 @@ function clearUserCheckInfo() {
         left: 0;
         width: 4.7266rem; 
         height: 4.78rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/figure-turntable.png") top center no-repeat;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/figure-turntable.png") top center no-repeat;
         background-size: 100% 100%;
         z-index: 1;
       }
@@ -999,7 +1106,7 @@ function clearUserCheckInfo() {
       transform: translateX(-50%);
       width: 1.58rem;
       height: .5733rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/lucky-draw/btn-luckydraw.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/btn-start.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .pop-container {
