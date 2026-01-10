@@ -1,0 +1,173 @@
+<!-- 工作人员备用扫码打卡 -->
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { wechatScan } from '@/utils/wechatLibrary';
+import { getLuckyNumAPI, checkPrizeAPI } from '@/apis/user'
+import { Toast } from 'vant'
+// 定义页面
+const pageNum = ref(1)
+
+// 扫描结果控制
+const isCorrect = ref(false)    // 是否备用打卡成功
+const checkPrizeData = async (data) => {
+    console.log("data:", data)
+    const res = await checkPrizeAPI(data)
+    console.log("获取到校验二维码的数据: ", res)
+    if (0 == res.data.errcode) {
+        isCorrect.value = res.data.data.check_status
+        pageNum.value = 1
+        if (!res.data.data.check_status){
+            Toast(res.data.data.check_status_msg);
+        }
+    }
+}
+
+async function scanQrCode() {
+    console.log("调起扫描")
+    const res = await wechatScan(checkPrizeData)
+    // if (0 == res.errcode) {
+    //     pageNum.value = 1
+    //     console.log(res.result)
+    // } else {
+    //     console.log(res.errmsg)
+    // }
+    console.log("扫描动作完成")
+}
+
+// 回到主页
+function backIndex() {
+    isCorrect.value = false
+    pageNum.value = 0
+}
+
+// 获取已核销的中奖人数
+const getLuckyNum = async () => {
+    const res = await getLuckyNumAPI();
+    console.log(res);
+    if (res.data.errcode == 0){
+        checkNum.value = res.data.data.lucky_num
+    }
+}
+onMounted(() => getLuckyNum())
+
+</script>
+
+<template>
+    <div class="page-body">
+        <!-- 起始页面 -->
+        <div v-show="pageNum==0" class="land-page">
+            <!-- 按钮-马上打卡 -->
+            <div class="btn-start" @click="scanQrCode()"></div>
+        </div>
+
+        <!-- 扫描结果页面 -->
+        <div v-show="pageNum==1" class="check-result">
+            <!-- 马花纹装饰 -->
+            <div class="figure-horse"></div>
+            <!-- icon和slogan -->
+            <div class="icon-slogan"></div>
+            <!-- 弹窗 -->
+            <div class="pop-window">
+                <!-- 打卡成功 -->
+                <div v-if="isCorrect" class="success"></div>
+                <!-- 打卡失败 -->
+                <div v-else class="fail"></div>
+               
+            </div>
+            <!-- 确定按钮 -->
+            <div class="btn-sure" @click="backIndex"></div>
+        </div>
+    </div>
+</template>
+
+<style lang="scss" scoped>
+.page-body {
+    // 通用页面
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+     // 起始页面
+    .land-page {
+        width: 100%;
+        height: 100%;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/bg.jpg") top center no-repeat;
+        background-size: cover;
+       
+        // 马上开始按钮
+        .btn-start {
+        position: absolute;
+        bottom: 2.7rem;
+        margin-left: 50%;
+        transform: translateX(-50%);
+        width: 1.5866rem;
+        height: .5733rem;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/btn-backup.png") top center no-repeat;
+        background-size: 100% 100%;
+        }
+    }
+
+    // 扫码结果页面
+    .check-result {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/bg.jpg") top center no-repeat;
+        background-size: cover;
+        .figure-horse {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 2.9533rem;
+            height: 2.9333rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/figure-horse.png") top center no-repeat;
+            background-size: 100% 100%;
+        }
+        .icon-slogan {
+            position: absolute;
+            top: .5rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1066rem;
+            height: 1.1933rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/slogan.png") top center no-repeat;
+            background-size: 100% 100%;
+        }   
+        .pop-window {
+            position: absolute;
+            top: 2.5rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 4.0133rem;
+            height: 5.8666rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/bg-pop.png") top center no-repeat;
+            background-size: 100% 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            .success {
+                width: 2.2933rem;
+                height: .58rem;
+                background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/backup-success.png") top center no-repeat;
+                background-size: 100% 100%;
+            }
+            .fail {
+                width: 2.3133rem;
+                height: .58rem;
+                background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/backup-fail.png") top center no-repeat;
+                background-size: 100% 100%;
+            }
+        }
+        .btn-sure {
+            position: absolute;
+            top: 9rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5866rem;
+            height: .5733rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/btn-sure.png") top center no-repeat;
+            background-size: 100% 100%;
+        }
+    }
+}
+</style>

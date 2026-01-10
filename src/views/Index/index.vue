@@ -9,7 +9,7 @@ import chapter from "../../components/chapter.vue";
 
 // 城市信息相关
 const cityList = ["广州", "上海", "北京", "重庆", "郑州", "线上"];
-const currentCity = ref("zhengzhou");
+const currentCity = ref("shanghai");
 // 定义用户信息
 let auth_code = "";
 // let user_id = "";
@@ -79,10 +79,10 @@ function navigateToPage(page) {
 // 印章页面相关功能
 let stampPageIndex = 1;  // 印章界面索引
 const isShowCheckRule = ref(false);  // 是否显示印章打卡页面规则
-const isNiceCheck = ref(true); //   已盖章-有好事
-const isPetCheck = ref(true); //   已盖章-有宠物
-const isRiskCheck = ref(true); //   已盖章-大冒险
-const isCarCheck = ref(true); //   已盖章-提新车
+const isNiceCheck = ref(false); //   已盖章-有好事
+const isPetCheck = ref(false); //   已盖章-有宠物
+const isRiskCheck = ref(false); //   已盖章-大冒险
+const isCarCheck = ref(false); //   已盖章-提新车
 // 定义备用方案的qrcode相关信息
 const qrCodeBackup = ref('')  // 二维码的值
 const qrCodeBackupSize = ref(180) // 码的黑色块尺寸
@@ -175,6 +175,18 @@ function navitageToLuckyDrawPage(){
 }
 
 // 抽奖页面相关功能
+const alreadyLucyDraw = ref(false);  // 是否已经抽奖
+const rotateDeg = ref(0); // 旋转角度
+const isSpinning = ref(false);  // 是否开始旋转
+// const canEnd = ref(false);  // 旋转结束回调状态锁
+const ACC_DURATION = 1400; // 加速 ms
+const DEC_DURATION = 5600; // 减速 ms
+const TOTAL_DURATION = ACC_DURATION + DEC_DURATION;
+
+// 定义备用方案的qrcode相关信息
+const userQrCode = ref('')  // 二维码的值
+const userQrCodeSize = ref(200) // 码的黑色块尺寸
+const userQrCodeMargin = ref(0)
 // 北方城市（百分百中奖）
 const cityNorth = ref(["beijing", "shanghai", "zhengzhou"]);
 // 南方城市（有谢谢参与）
@@ -182,6 +194,7 @@ const citySouth = ref(["chongqing", "guangzhou"]);
 const TOTAL = 9;  // 转盘总共平均分成了9个部分
 const ANGLE_PER = 360 / TOTAL;  // 每个部分所占角度：40
 const prizeNum = ref(0);  // 抽到的几等奖，0为起始值，1-5为五等奖，6为谢谢参与（仅限重庆和广州）
+
 // 北京、上海、郑州游戏转盘布局
 // '一等奖', // 0
 // '五等奖', // 1
@@ -224,20 +237,10 @@ function randomFromArray<T>(arr: T[]): T {
 }
 // 两段式旋转
 function startSpin(prizeIndex: number) {
-  const current = rotateDeg.value % 360  // 当前真实角度
-
-  // 第一段：只做视觉加速
-  phase.value = 'accelerate'
-  rotateDeg.value += 360 * 2
-  console.log("旋转角度：", rotateDeg.value);
-  // 第二段
-  setTimeout(() => {
-    phase.value = 'decelerate'
-
-    const targetAngle = 360 * 4 - prizeIndex * ANGLE_PER
-
-    rotateDeg.value += targetAngle
-  }, 1400)
+  // canEnd.value = true;
+  const targetAngle = 360 * 7 - prizeIndex * ANGLE_PER;
+  rotateDeg.value = targetAngle;
+  return;
 }
 // 抽奖
 async function draw() {
@@ -247,7 +250,7 @@ async function draw() {
 
   // 后端只返回奖项类型
   // undo
-  prizeNum.value = 5;  // mock
+  prizeNum.value = 1;  // mock
   console.log("当前抽的奖项为：", prizeNum.value);
 
   let indexList = [];
@@ -264,25 +267,18 @@ async function draw() {
 }
 // 旋转完回调
 function onSpinEnd(e: TransitionEvent) {
-  // 只关心 transform 的 transition
-  if (e.propertyName !== 'transform') return
-  // 只在减速阶段才认为是“真正结束”
-  if (phase.value !== 'decelerate') return
+  if (e.propertyName !== 'transform') return;
+  // if (!canEnd.value) return;
   console.log("旋转完成");
+  // canEnd.value = false; // 关状态锁
+  console.log("状态锁关闭");
   // 重新打开旋转开关
   isSpinning.value = false;
   // 显示中奖弹窗
   alreadyLucyDraw.value = true;
 }
 
-const alreadyLucyDraw = ref(false);  // 是否已经抽奖
-const rotateDeg = ref(0); // 旋转角度
-const isSpinning = ref(false);  // 是否开始旋转
-const phase = ref<'idle' | 'accelerate' | 'decelerate'>('idle')
-// 定义备用方案的qrcode相关信息
-const userQrCode = ref('')  // 二维码的值
-const userQrCodeSize = ref(200) // 码的黑色块尺寸
-const userQrCodeMargin = ref(0)
+
 
 // 封装清除用户打卡信息函数
 const clearDrawInfo = async () => {
@@ -441,7 +437,6 @@ function clearUserCheckInfo() {
         <!-- 北方城市转盘 -->
         <div v-show="cityNorth.includes(currentCity)" 
           class="turn-table" 
-          :class="phase" 
           style="--bg: url('https://www.mbcstyle.cn/projects/lego2026cny/images/draw/turntable-bj-sh-zz.png')"
           :style="{transform:`rotate(${rotateDeg}deg)`}" 
           @transitionend="onSpinEnd"
@@ -450,7 +445,6 @@ function clearUserCheckInfo() {
         <!-- 南方城市转盘 -->
         <div v-show="citySouth.includes(currentCity)" 
           class="turn-table" 
-          :class="phase" 
           style="--bg: url('https://www.mbcstyle.cn/projects/lego2026cny/images/draw/turntable-cq-gz.png')"
           :style="{transform:`rotate(${rotateDeg}deg)`}" 
           @transitionend="onSpinEnd">
@@ -1256,13 +1250,8 @@ function clearUserCheckInfo() {
         background: var(--bg) top center no-repeat;
         background-size: 100% 100%;
         transform-origin: center center;
-        // transition: transform 5s cubic-bezier(0.22, 1, 0.36, 1);
-        &.accelerate {
-          transition: transform 1.4s cubic-bezier(0.4, 0, 1, 1);
-        }
-        &.decelerate {
-          transition: transform 5.6s cubic-bezier(0.22, 1, 0.36, 1);
-        }
+        transition: transform 6.8s cubic-bezier(0.25, 0.05, 0.25, 1);
+        will-change: transform;
       }
       .pointer {
         position: absolute;
