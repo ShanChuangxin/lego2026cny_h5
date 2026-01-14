@@ -16,7 +16,7 @@ const cityCodeList = {
   "guangzhou": "LCS059-MCSZ"
 }
 
-const currentCity = ref("shanghai");
+const currentCity = ref("");
 // 定义用户信息
 // let user_id = "";
 // let uqr_code = ""; // 注意这是用户的qrcode，不是打卡页面的qrcode
@@ -56,7 +56,6 @@ const loadUserInfo = async () => {
             // 状态记录
             userInfo.value.user_id = res.data.data.user_id;
             userInfo.value.qr_code = res.data.data.qr_code;
-            userQrCode.value = userInfo.value.qr_code;  // 最后抽奖弹窗的二维码
             userInfo.value.draw_time = res.data.data.draw_time;
             userInfo.value.prize_code = res.data.data.prize_code; // 所抽的奖品等级，1-5代表着1-5等奖
             userInfo.value.verify_status = res.data.data.verify_status; // 是否核销
@@ -69,7 +68,7 @@ const loadUserInfo = async () => {
             console.log(isRiskCheck.value);
             console.log(isCarCheck.value);
             // 更新用户二维码，用于最后核销奖品显示
-            userQrCode.value = res.data.data.user_id;
+            userQrCode.value = userInfo.value.qr_code;  // 最后抽奖弹窗的二维码
             // 页面记录同步
             if (userInfo.value.prize_code != 0) {  // 百分百中奖，0为未抽奖
               console.log("已抽过奖，跳转到抽奖结果页面");
@@ -321,24 +320,20 @@ function onSpinEnd(e: TransitionEvent) {
   alreadyLucyDraw.value = true;
 }
 
-
-
-// 封装清除用户打卡信息函数
-const clearDrawInfo = async () => {
+// 清除用户打信息并回到主页
+const clearUserInfo = async () => {
+  console.log("清除用户信息并回到主页");
+  // 1. 向服务器请求清除打卡和抽奖信息
   const res = await clearDrawInfoAPI({user_id: userInfo.value.user_id})
   if (res.data.errcode == 0) {
+    // 2. 重新加载用户信息
+    loadUserInfo();
     Toast("用户信息清除成功");
+    // 3. 返回主页
+    navigateToPage(0);
   } else {
     Toast(res.data.errmsg);
   }
-}
-// 清除用户打信息并回到主页
-function clearUserCheckInfo() {
-  console.log("清除用户信息并回到主页");
-  // 1. 清除用户打卡信息
-  clearDrawInfo()
-  // 2. 回到主页
-  navigateToPage(0);
 }
 
 </script>
@@ -366,7 +361,18 @@ function clearUserCheckInfo() {
       <!-- icon和slogan -->
       <div class="icon-slogan"></div>
       <!-- 规则内容 -->
-      <div class="ruler-content"></div>
+      <div class="ruler-content">
+        <div class="scroll">
+          <!-- 规则内容 -->
+          <div v-show="currentCity=='beijing'" class="beijing-ruler-content"></div>
+          <div v-show="currentCity=='shanghai'" class="shanghai-ruler-content"></div>
+          <div v-show="currentCity=='guangzhou'" class="guangzhou-ruler-content"></div>
+          <div v-show="currentCity=='chongqing'" class="chongqing-ruler-content"></div>
+          <div v-show="currentCity=='zhengzhou'" class="zhengzhou-ruler-content"></div>
+        </div>
+      </div>
+      <!-- 规则标题 -->
+      <div class="ruler-title"></div>
       <!-- 按钮-马上开始 -->
       <div class="btn-start" @click="navigateToPage(2)"></div>
     </div>
@@ -377,7 +383,7 @@ function clearUserCheckInfo() {
         <!-- icon和slogan -->
         <div class="icon-slogan">
           <!-- 隐藏按钮-清除用户信息 -->
-          <div class="btn-clear" @click="clearUserCheckInfo()"></div>
+          <div class="btn-clear" @click="clearUserInfo()"></div>
         </div>
         <!-- 路径地图 -->
         <div class="path-map">
@@ -472,7 +478,7 @@ function clearUserCheckInfo() {
       <!-- icon和slogan -->
       <div class="icon-slogan">
           <!-- 隐藏按钮-清除用户信息 -->
-          <div class="btn-clear" @click="clearUserCheckInfo()"></div>
+          <div class="btn-clear" @click="clearUserInfo()"></div>
       </div>
       <!-- 游戏转盘 -->
       <div class="turntable-container">
@@ -500,7 +506,7 @@ function clearUserCheckInfo() {
       <!-- 开始抽奖按钮 -->
       <div class="btn-luckydraw" @click="draw"></div>
       <!-- 弹窗容器 -->
-      <div v-show="alreadyLucyDraw" class="pop-container">
+      <div v-show="alreadyLucyDraw" class="pop-container" @click="clearUserInfo()">
         <!-- 北京中奖弹窗 -->
         <div v-show="currentCity=='beijing' && prizeNum == 1" class="beijing-prize-1">
           <div class="tips"></div>
@@ -789,7 +795,7 @@ function clearUserCheckInfo() {
     position: relative;
     width: 100%;
     height: 100%;
-    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/bg.jpg") top center no-repeat;
+    background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/bg.jpg") top center no-repeat;
     background-size: cover;
     .figure-horse {
       position: absolute;
@@ -797,7 +803,7 @@ function clearUserCheckInfo() {
       bottom: 0;
       width: 2.94rem;
       height: 2.9266rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/figure-horse.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/figure-horse.png") top center no-repeat;
       background-size: 100% 100%;
     }
     .icon-slogan {
@@ -807,22 +813,78 @@ function clearUserCheckInfo() {
       transform: translateX(-50%);
       width: 3.1066rem;
       height: 1.1933rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/slogan.png") top center no-repeat;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/slogan.png") top center no-repeat;
       background-size: 100% 100%;
     }
-    .ruler-content {
+    .ruler-title {
       position: absolute;
       top: 2rem;
       margin-left: 50%;
       transform: translateX(-50%);
-      width: 3.8733rem;
-      height: 6.6066rem;
-      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/ruler-content.png") top center no-repeat;
+      width: 1.7266rem;
+      height: .42rem;
+      background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/title.png") top center no-repeat;
       background-size: 100% 100%;
+    }
+    .ruler-content {
+      position: absolute;
+      top: 2.23rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 4.1rem;
+      height: 6rem;
+      border: 2px solid #e5bc66;
+      border-radius: 15px;
+      overflow: hidden;
+      background-color: rgba(0, 0, 0, .1);
+      padding: .3rem .2rem;
+      .scroll {
+        height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;  // 微信 + ios滚动优化
+        // 隐藏滚动条
+        scrollbar-width: none;  // Firefox
+        -ms-overflow-style: none; // IE / Edge
+        &::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+          display: none;
+        }
+        .beijing-ruler-content {
+          width: 3.6266rem;
+          height: 9.4666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/beijing-rule-content.png") top center no-repeat;
+          background-size: 100% 100%;
+        }
+        .shanghai-ruler-content {
+          width: 3.6266rem;
+          height: 9.7066rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/shanghai-rule-content.png") top center no-repeat;
+          background-size: 100% 100%;
+        }
+        .zhengzhou-ruler-content {
+          width: 3.6266rem;
+          height: 9.9466rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/zhengzhou-rule-content.png") top center no-repeat;
+          background-size: 100% 100%;
+        }
+        .chongqing-ruler-content {
+          width: 3.6266rem;
+          height: 10.0333rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/chongqing-rule-content.png") top center no-repeat;
+          background-size: 100% 100%;
+        }
+        .guangzhou-ruler-content {
+          width: 3.6266rem;
+          height: 9.7066rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/guangzhou-rule-content.png") top center no-repeat;
+          background-size: 100% 100%;
+        }
+      }
     }
     .btn-start {
       position: absolute;
-      bottom: 1.5rem;
+      bottom: .8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.5866rem;
@@ -1274,7 +1336,7 @@ function clearUserCheckInfo() {
         background-color: rgba(255, 255, 255, 0);
       }
     }
-    .turntable-container {  // 缺少切图，临时用其它素材
+    .turntable-container { 
       position: absolute;
       top: 2rem;
       margin-left: 50%;

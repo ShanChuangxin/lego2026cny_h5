@@ -11,7 +11,6 @@ const pageNum = ref(0)
 // 城市信息
 const cityList = <string[]>["beijing", "shanghai", "zhengzhou", "chongqing", "guangzhou"];
 const currentCity = ref("");
-const prizeNum = ref(0);
 // 通过url参数获取当前城市
 const route = useRoute();
 
@@ -39,16 +38,16 @@ const getTodayPrizeInfo = async () => {
         if (cityList.includes(city)) {
             currentCity.value = city;   // 更新城市参数
             // 2. 拉取城市核销信息
-                const res = await getTodayPrizeInfoAPI({city});
-                console.log("拉取到的今日的奖品信息为：", res);
-                if (res.data.errcode == 0){
-                    PRIZE_KEYS.forEach(key => {
-                        prizeInfo.value[key].check_count = res.data.data.today_info[key]?.check_count ?? 0; 
-                        prizeInfo.value[key].issued_count = res.data.data.today_info[key]?.issued_count ?? 0;
-                    })
-                } else {
-                    console.log("拉取今日奖品信息失败：", res.data.errmsg);
-                }
+            const res = await getTodayPrizeInfoAPI({city: currentCity.value});
+            console.log("拉取到的今日的奖品信息为：", res);
+            if (res.data.errcode == 0){
+                PRIZE_KEYS.forEach(key => {
+                    prizeInfo.value[key].check_count = res.data.data.today_info[key]?.check_count ?? 0; 
+                    prizeInfo.value[key].issued_count = res.data.data.today_info[key]?.issued_count ?? 0;
+                })
+            } else {
+                console.log("拉取今日奖品信息失败：", res.data.errmsg);
+            }
         } else {
             Toast("城市参数错误");
             return;
@@ -67,37 +66,37 @@ const refreshData = () => {
 
 
 // 扫描结果控制
-const checkNum = ref(1) // 核销人数
-const isCorrect = ref(false)    // 是否核销成功
+const prizeNum = ref(0);
 const checkPrizeData = async (data) => {
-    console.log("data:", data)
     const res = await checkPrizeAPI(data)
     console.log("获取到校验二维码的数据: ", res)
     if (0 == res.data.errcode) {
-        isCorrect.value = true;
-        checkNum.value = res.data.data.check_num
-        pageNum.value = 1
+        console.log("prizeNum: ", res.data.data.check_num);
+        prizeNum.value = res.data.data.check_num;
+        pageNum.value = 1;
     } else {
+        prizeNum.value = 0;
+        pageNum.value = 1;
         Toast(res.data.errmsg);
     }
 }
 
 async function scanQrCode() {
-    console.log("调起扫描")
-    const res = await wechatScan(checkPrizeData)
+    console.log("调起扫描");
+    const res = await wechatScan(checkPrizeData);
     // if (0 == res.errcode) {
     //     pageNum.value = 1
     //     console.log(res.result)
     // } else {
     //     console.log(res.errmsg)
     // }
-    console.log("扫描动作完成")
+    console.log("扫描动作完成");
 }
 
 // 回到主页
 function backIndex() {
-    isCorrect.value = false
-    pageNum.value = 0
+    prizeNum.value = 0;
+    pageNum.value = 0;
 }
 
 </script>
@@ -243,7 +242,7 @@ function backIndex() {
         // 马上开始按钮
         .btn-start {
             position: absolute;
-            bottom: 2.7rem;
+            bottom: 2rem;
             margin-left: 50%;
             transform: translateX(-50%);
             width: 1.5866rem;

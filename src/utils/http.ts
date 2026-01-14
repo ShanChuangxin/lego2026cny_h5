@@ -5,7 +5,7 @@ import router from '@/router' // 注意：useRouter只能在vue里用，不能�
 
 const httpInstance: AxiosInstance = axios.create({
     baseURL: 'https://www.mbcstyle.cn/api/cny2026lego/',
-    // baseURL: 'http://127.0.0.1:8000/api/ciie2025lego/',
+    // baseURL: 'http://127.0.0.1:8000/api/cny2026lego/',
     timeout: 5000,
     headers: {
         'Content-Type': 'application/json', // 确保设置 Content-Type 为 application/json

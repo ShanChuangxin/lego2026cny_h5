@@ -52,11 +52,11 @@ export const wechatConfigAPI = (data: { url: string }): Promise<AxiosResponse<Re
 }
 // 备用方案扫码打卡
 export const scanCheckAPI = (data: ScanCheck): Promise<AxiosResponse<ResponseType<UserInfo>>> => {
-    return httpInstance.post<ResponseType<ScanCheck>>('scan_check')
+    return httpInstance.post<ResponseType<ScanCheck>>('scan_check', data)
 }
 // 获取今日礼品情况
 export const getTodayPrizeInfoAPI = (data: { city: string }): Promise<AxiosResponse<ResponseType<TodayPrizeInfo>>> => {
-    return httpInstance.post<ResponseType<TodayPrizeInfo>>('today_prize_info')
+    return httpInstance.post<ResponseType<TodayPrizeInfo>>('today_prize_info', data)
 }
 // 核销奖品
 export const checkPrizeAPI = (data: { qr_code: string, city: string }): Promise<AxiosResponse<ResponseType<CheckResult>>> => {

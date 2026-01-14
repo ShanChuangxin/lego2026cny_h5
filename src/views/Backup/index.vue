@@ -5,10 +5,10 @@ import { wechatScan } from '@/utils/wechatLibrary';
 import { scanCheckAPI } from '@/apis/user'
 import { Toast } from 'vant'
 // 定义页面
-const pageNum = ref(1)
+const pageNum = ref(0)
 
 // 扫描结果控制
-const isCorrect = ref(true)    // 是否备用打卡成功
+const isCorrect = ref(false)    // 是否备用打卡成功
 const checkPrizeData = async (data) => {
     console.log("data:", data)
     const res = await scanCheckAPI(data)
@@ -17,6 +17,7 @@ const checkPrizeData = async (data) => {
     if (0 == res.data.errcode) {
         isCorrect.value = true;
     } else {
+        isCorrect.value = false;
         Toast(res.data.errmsg);
     }
 }
@@ -96,7 +97,7 @@ function backIndex() {
         // 马上开始按钮
         .btn-start {
         position: absolute;
-        bottom: 2.7rem;
+        bottom: 1.8rem;
         margin-left: 50%;
         transform: translateX(-50%);
         width: 1.5866rem;
