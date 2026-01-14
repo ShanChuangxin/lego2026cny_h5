@@ -7,12 +7,12 @@ export type UserInfo = {
     auth_code?: stirng;
     city?: string;
     qr_code?: string;
-    position_time_1?: boolean | string;
-    position_time_2?: boolean | string;
-    position_time_3?: boolean | string;
-    position_time_4?: boolean | string;
+    position_time_1?: number;
+    position_time_2?: number;
+    position_time_3?: number;
+    position_time_4?: number;
     prize_code?: number;  // 所中的奖品，0为未中奖，1-5为中奖奖品
-    draw_time?: boolean | string;
+    draw_time?: number;
     verify_status?: boolean;
     flow_status?: string;
     // 用户资料

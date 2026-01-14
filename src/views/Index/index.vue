@@ -58,7 +58,7 @@ const loadUserInfo = async () => {
             userInfo.value.qr_code = res.data.data.qr_code;
             userInfo.value.draw_time = res.data.data.draw_time;
             userInfo.value.prize_code = res.data.data.prize_code; // 所抽的奖品等级，1-5代表着1-5等奖
-            userInfo.value.verify_status = res.data.data.verify_status; // 是否核销
+            // userInfo.value.verify_status = res.data.data.verify_status; // 是否核销
             isNiceCheck.value = Boolean(res.data.data.position_time_1);
             isPetCheck.value = Boolean(res.data.data.position_time_2);
             isRiskCheck.value = Boolean(res.data.data.position_time_3);
@@ -326,10 +326,22 @@ const clearUserInfo = async () => {
   // 1. 向服务器请求清除打卡和抽奖信息
   const res = await clearDrawInfoAPI({user_id: userInfo.value.user_id})
   if (res.data.errcode == 0) {
-    // 2. 重新加载用户信息
+    // 2. 本地数据清空
+    isNiceCheck.value = false;
+    isPetCheck.value = false;
+    isRiskCheck.value = false;
+    isCarCheck.value =false;
+    userInfo.value.prize_code = 0;
+    userInfo.value.draw_time = 0;
+    prizeNum.value = 0;
+    alreadyLucyDraw.value = false;
+    rotateDeg.value = 0;
+    isSpinning.value = false;
+
+    // 3. 重新加载用户信息
     loadUserInfo();
     Toast("用户信息清除成功");
-    // 3. 返回主页
+    // 4. 返回主页
     navigateToPage(0);
   } else {
     Toast(res.data.errmsg);
