@@ -2,23 +2,22 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { wechatScan } from '@/utils/wechatLibrary';
-import { getLuckyNumAPI, checkPrizeAPI } from '@/apis/user'
+import { scanCheckAPI } from '@/apis/user'
 import { Toast } from 'vant'
 // 定义页面
 const pageNum = ref(1)
 
 // 扫描结果控制
-const isCorrect = ref(false)    // 是否备用打卡成功
+const isCorrect = ref(true)    // 是否备用打卡成功
 const checkPrizeData = async (data) => {
     console.log("data:", data)
-    const res = await checkPrizeAPI(data)
+    const res = await scanCheckAPI(data)
     console.log("获取到校验二维码的数据: ", res)
+    pageNum.value = 1
     if (0 == res.data.errcode) {
-        isCorrect.value = res.data.data.check_status
-        pageNum.value = 1
-        if (!res.data.data.check_status){
-            Toast(res.data.data.check_status_msg);
-        }
+        isCorrect.value = true;
+    } else {
+        Toast(res.data.errmsg);
     }
 }
 
@@ -41,14 +40,14 @@ function backIndex() {
 }
 
 // 获取已核销的中奖人数
-const getLuckyNum = async () => {
-    const res = await getLuckyNumAPI();
-    console.log(res);
-    if (res.data.errcode == 0){
-        checkNum.value = res.data.data.lucky_num
-    }
-}
-onMounted(() => getLuckyNum())
+// const getLuckyNum = async () => {
+//     const res = await getLuckyNumAPI();
+//     console.log(res);
+//     if (res.data.errcode == 0){
+//         checkNum.value = res.data.data.lucky_num
+//     }
+// }
+// onMounted(() => getLuckyNum())
 
 </script>
 

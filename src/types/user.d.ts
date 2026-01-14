@@ -11,7 +11,7 @@ export type UserInfo = {
     position_time_2?: boolean | string;
     position_time_3?: boolean | string;
     position_time_4?: boolean | string;
-    draw_status?: number;  // 所中的奖品，0为未中奖，1-5为中奖奖品
+    prize_code?: number;  // 所中的奖品，0为未中奖，1-5为中奖奖品
     draw_time?: boolean | string;
     verify_status?: boolean;
     flow_status?: string;
@@ -45,20 +45,24 @@ export type RequestDraw = {
 
 // 抽奖结果
 export type ResposeDraw = {
-    draw_result?: boolean
-    lucky_num?: number;
-
+    prize_code?: number;
 }
 
 // 备用方案扫码打卡
 export type ScanCheck = {
     city?: string;
-    check_info?: string;    // 客人H5隐藏按钮的信息，格式为：用户id_打卡点编号
+    qr_code?: string;    // 客人H5隐藏按钮的信息，格式为：用户id_打卡点编号
 }
 
-// 已核销中奖人数
-export type LuckyNum = {
-    lucky_num: number;
+// 今日礼品发放数量
+type PrizeKey = 'prize_1' | 'prize_2' | 'prize_3' | 'prize_4' | 'prize_5';
+type PrizeItem = {
+    check_count: number;
+    issued_count: number;
+}
+export type TodayPrizeInfo = {
+    city?: string;
+    today_info: Partial<Record<PrizeKey, PrizeItem>>;   // 允许prize缺失，但类型受控
 }
 
 // 核销结果

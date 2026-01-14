@@ -8,10 +8,16 @@ import type { UserInfo } from '@/types/user'
 import chapter from "../../components/chapter.vue";
 
 // 城市信息相关
-const cityList = ["广州", "上海", "北京", "重庆", "郑州", "线上"];
+const cityCodeList = {
+  "beijing": "LCS016-HTD",
+  "shanghai": "LCS277-EBT",
+  "zhengzhou": "LCS052-XJMZZ",
+  "chongqing": "897_LBR_Store",
+  "guangzhou": "LCS059-MCSZ"
+}
+
 const currentCity = ref("shanghai");
 // 定义用户信息
-let auth_code = "";
 // let user_id = "";
 // let uqr_code = ""; // 注意这是用户的qrcode，不是打卡页面的qrcode
 // let draw_time = "";
@@ -23,35 +29,64 @@ const userInfo = ref<UserInfo>()
 const route = useRoute();
 const loadUserInfo = async () => {
     console.log("获取的参数信息为：", route.query);
-    if (route.query.authCode) {
-        auth_code = route.query.authCode as string;
+    // 需要获取authCode用于获取用户信息，需要utmChannel_var用于获取城市信息
+    if (route.query.authCode && route.query.utmChannel_var) {
+        // 选择城市信息
+        const cityCode = route.query.utmChannel_var as string;
+        console.log("city: ", cityCode);
+        if (cityCode == cityCodeList["beijing"]) {
+          currentCity.value = "beijing";
+        } else if (cityCode == cityCodeList["shanghai"]) {
+          currentCity.value = "shanghai";
+        } else if (cityCode == cityCodeList["zhengzhou"]) {
+          currentCity.value = "zhengzhou";
+        } else if (cityCode == cityCodeList["chongqing"]) {
+          currentCity.value = "chongqing";
+        } else if (cityCode == cityCodeList["guangzhou"]) {
+          currentCity.value = "guangzhou";
+        } else {
+          Toast("城市参数错误");
+        }
+        const auth_code = route.query.authCode as string;
         console.log("auth_code: ", auth_code);
-        const res = await getUserInfoAPI({ auth_code});           
-        console.log(res);
+        const res = await getUserInfoAPI({ auth_code, city: currentCity.value});           
+        console.log("服务器信息：", res);
         if (res.data.errcode == 0) {
             userInfo.value = res.data.data;
             // 状态记录
             userInfo.value.user_id = res.data.data.user_id;
             userInfo.value.qr_code = res.data.data.qr_code;
-            userInfo.value.draw_time = res.data.data.draw_time.toString();
-            userInfo.value.draw_status = res.data.data.draw_status; // 所抽的奖品等级，1-5代表着1-5等奖
+            userQrCode.value = userInfo.value.qr_code;  // 最后抽奖弹窗的二维码
+            userInfo.value.draw_time = res.data.data.draw_time;
+            userInfo.value.prize_code = res.data.data.prize_code; // 所抽的奖品等级，1-5代表着1-5等奖
             userInfo.value.verify_status = res.data.data.verify_status; // 是否核销
             isNiceCheck.value = Boolean(res.data.data.position_time_1);
             isPetCheck.value = Boolean(res.data.data.position_time_2);
             isRiskCheck.value = Boolean(res.data.data.position_time_3);
             isCarCheck.value = Boolean(res.data.data.position_time_4);
+            console.log(isNiceCheck.value);
+            console.log(isPetCheck.value);
+            console.log(isRiskCheck.value);
+            console.log(isCarCheck.value);
             // 更新用户二维码，用于最后核销奖品显示
             userQrCode.value = res.data.data.user_id;
             // 页面记录同步
-            if (userInfo.value.draw_status != 0) {  // 百分百中奖，0为未抽奖
+            if (userInfo.value.prize_code != 0) {  // 百分百中奖，0为未抽奖
+              console.log("已抽过奖，跳转到抽奖结果页面");
               // 1. 更新中奖弹窗信息
               alreadyLucyDraw.value = true; // 打开中奖弹窗
-              // undo // 更新弹窗内容
+              if (userInfo.value.prize_code == 6 && (currentCity.value == "chongqing" || currentCity.value == "guangzhou")){
+                prizeNum.value = 5; // 防止重庆或者广州的人中了无限量奖，又跑到了北方城市，直接升一等级（防止北方城市的UI没有6这个奖项）
+              } else {
+                prizeNum.value = userInfo.value.prize_code;// 更新中奖结果, 弹窗内容
+              }
               // 2. 跳转到抽奖页面
               navigateToPage(4);
-            } else if (!isCarCheck && !isPetCheck && !isRiskCheck && !isCarCheck) { // 没有打过任何打卡点，跳到首页
+            } else if (!isCarCheck.value && !isPetCheck.value && !isRiskCheck.value && !isCarCheck.value) { // 没有打过任何打卡点，跳到首页
+              console.log("未打卡，跳到首页");
               navigateToPage(0);  // 跳转到首页
             } else {
+              console.log("未打完所有卡，跳到打卡地图页面");
               navigateToPage(2);  // 跳转到地图页面
             }
         } else {
@@ -93,16 +128,38 @@ const fffImg = ref<string>(""); // 未盖章完成的图片
 const blackImg = ref<string>("");  // 印戳图片，但是设置为空，因为不使用电子印章SDK组件的印戳渲染，只使用盖章成功的回调函数
 const errorNumber = ref(0.1); // 0-1，数字越小，检查越严格。一般0.1
 const arrAy = ref<any>([1, 1.0075192724740782, 1.0111229484707331, 1.069166113052584, 1.1348035748452034, 1.4507467151160764, 1.5075372936197426, 1.7161704869389864, 1.754161213064937, 1.9332532130008513]);  // 电子印章数据特征
+
 // 盖章完成方法
+// 先往服务器校验，校验成功了才会显示印戳
 const adoptFn = async () => {
-  // TODO: 盖章完成方法
-  console.log("盖章完成");
-  addStamp(); // 盖印章。注意，只使用了电子印章的SDK印章成功r的r回调，但是不使用SDK中的渲染印戳图片功能
+  // 判断是不是已经盖过章了，已经盖过章，则不允许重复盖章
+  if ((stampPageIndex == 1 && isNiceCheck.value == true) || (stampPageIndex == 2 && isPetCheck.value == true) || (stampPageIndex == 3 && isRiskCheck.value == true) || (stampPageIndex == 4 && isCarCheck.value == true)){
+    console.log("该页面已经盖过章了，无需重复盖章");
+    return;
+  } 
+  // 向服务器请求盖章
+  const res = await stampCheckAPI({user_id: userInfo.value.user_id, position_num: stampPageIndex})
+  console.log("盖章结果服务器反馈反馈：", res);
+  if (res.data.errcode == 0) {  // 盖章成功
+    // 1. 更新UI界面上的印戳
+    if (stampPageIndex == 1 && isNiceCheck.value == false) {
+      isNiceCheck.value = true;
+    } else if (stampPageIndex == 2 && isPetCheck.value == false) {
+      isPetCheck.value = true;
+    } else if (stampPageIndex == 3 && isRiskCheck.value == false) {
+      isRiskCheck.value = true;
+    } else if (stampPageIndex == 4 && isCarCheck.value == false) {
+      isCarCheck.value = true;
+    }
+    console.log("盖章完成");
+  } else {
+    console.log("盖章失败：", res.data.errmsg);
+  }
 };
 // 切换到印章页面函数
 function navigateToStampPage(page) {
   console.log("stamp page：" + page)
-  // 当前所在页面状态记录
+  // 当前所在页面印章状态记录
   stampPageIndex = page;
   navigateToPage(3);
 }
@@ -111,55 +168,35 @@ function switchShowCheckRule(isShowRule) {
   console.log("打开规则介绍");
   isShowCheckRule.value = isShowRule;
 }
-// 封装异步打卡函数
-const stampCheck = async () => {
-  const res = await stampCheckAPI({user_id: userInfo.value.user_id, position_num: stampPageIndex})
-  console.log(res);
-  // 不需要做处理，只是通知服务器该打卡点被打卡
-  // 有可能出现服务器没有同步的情况
-}
-// 盖印戳函数。这里应该是用电子印章
-function addStamp() {
-  // 1. 更新UI界面上的印戳
-  if (stampPageIndex == 1 && isNiceCheck.value == false) {
-    isNiceCheck.value = true;
-  } else if (stampPageIndex == 2 && isPetCheck.value == false) {
-    isPetCheck.value = true;
-  } else if (stampPageIndex == 3 && isRiskCheck.value == false) {
-    isRiskCheck.value = true;
-  } else if (stampPageIndex == 4 && isCarCheck.value == false) {
-    isCarCheck.value = true;
-  }
-  // 1. 向服务器同步打卡信息。这里有可能考虑先向服务器校验再出现印戳，但是可能印戳出现有延迟
-  stampCheck();
-}
-// 查询备用方案打卡结果
-const stampStatus = async () => {
-  const res = await stampStatusAPI({user_id: userInfo.value.user_id})
-  console.log(res);
-  if (res.data.errcode == 0) {
-    isNiceCheck.value = Boolean(res.data.data.position_time_1);
-    isPetCheck.value = Boolean(res.data.data.position_time_2);
-    isRiskCheck.value = Boolean(res.data.data.position_time_3);
-    isCarCheck.value = Boolean(res.data.data.position_time_4);
-  } else {
-    console.log(res.data.errmsg);
-  }
-}
+
 // 显示备用扫码打卡二维码
-function showBackupQrCode(isShowCode) {
-  // 显示二维码
+const showBackupQrCode = async (isShowCode) => {
   isShowBackupQrCode.value = isShowCode;
-  if (isShowCode) {
+  if (isShowCode) { // 显示二维码
     console.log("显示备用打卡二维码");
     // 更新二维码的值
-    qrCodeBackup.value = "abcdefghijklmn" + "_" + stampPageIndex.toString();
-    console.log(qrCodeBackup.value);
-
-  } else {
-    // 重新从服务器拉取是否已经打卡状态
-    console.log("隐藏二维码并从服务器拉取最新的打卡状态");
-    stampStatus(); 
+    qrCodeBackup.value = userInfo.value.user_id + "_" + stampPageIndex.toString();
+    console.log("备用方案二维码为：", qrCodeBackup.value);
+  } else {  // 隐藏二维码
+    // 如果当前页面已经盖过章了
+    if ((stampPageIndex == 1 && isNiceCheck.value == true) || (stampPageIndex == 2 && isPetCheck.value == true) || (stampPageIndex == 3 && isRiskCheck.value == true) || (stampPageIndex == 4 && isCarCheck.value == true)){
+      console.log("该页面已经盖过章了，无需重新拉取打卡状态");
+      return;
+    } else {
+      // 重新从服务器拉取是否已经打卡状态
+      console.log("隐藏二维码并从服务器拉取最新的打卡状态");
+      // stampStatus();
+      const res = await stampStatusAPI({user_id: userInfo.value.user_id})
+      console.log("同步的最新打卡结果：", res);
+      if (res.data.errcode == 0) {
+        isNiceCheck.value = Boolean(res.data.data.position_time_1);
+        isPetCheck.value = Boolean(res.data.data.position_time_2);
+        isRiskCheck.value = Boolean(res.data.data.position_time_3);
+        isCarCheck.value = Boolean(res.data.data.position_time_4);
+      } else {
+        console.log("同步备用打卡信息失败：", res.data.errmsg);
+      }
+    }
   }
 }
 
@@ -244,14 +281,23 @@ function startSpin(prizeIndex: number) {
 }
 // 抽奖
 async function draw() {
-  if (isSpinning.value) return; // 如果在抽奖，则点击没有反应
+  if (isSpinning.value) {
+    console.log("转盘旋转中..");
+    return; // 如果在抽奖，则点击没有反应
+  }
+  // prizeNum.value = 1;  // mock
+  // 向服务器请求抽奖结果
+  const res = await withdrawAPI({user_id: userInfo.value.user_id, city: userInfo.value.city});
+  console.log("获取的抽奖结果为：", res);
+  if (0 == res.data.errcode) {
+    prizeNum.value = res.data.data.prize_code;
+    console.log("当前抽的奖项为：", prizeNum.value);
+  } else {
+    console.log("抽奖失败：", res.data.errmsg);
+    return;
+  }
   console.log("开始旋转抽奖转盘");
   isSpinning.value = true;
-
-  // 后端只返回奖项类型
-  // undo
-  prizeNum.value = 1;  // mock
-  console.log("当前抽的奖项为：", prizeNum.value);
 
   let indexList = [];
   // 从该奖项的多个位置中随机一个
@@ -268,10 +314,7 @@ async function draw() {
 // 旋转完回调
 function onSpinEnd(e: TransitionEvent) {
   if (e.propertyName !== 'transform') return;
-  // if (!canEnd.value) return;
   console.log("旋转完成");
-  // canEnd.value = false; // 关状态锁
-  console.log("状态锁关闭");
   // 重新打开旋转开关
   isSpinning.value = false;
   // 显示中奖弹窗

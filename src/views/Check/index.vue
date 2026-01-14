@@ -2,9 +2,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { wechatScan } from '@/utils/wechatLibrary';
-import { getLuckyNumAPI, checkPrizeAPI } from '@/apis/user'
+import { getTodayPrizeInfoAPI, checkPrizeAPI } from '@/apis/user'
 import { Toast } from 'vant'
 import { useRoute } from 'vue-router'
+import { PrizeKey, PrizeItem } from '@/types/user';
 // 定义页面
 const pageNum = ref(0)
 // 城市信息
@@ -13,14 +14,41 @@ const currentCity = ref("");
 const prizeNum = ref(0);
 // 通过url参数获取当前城市
 const route = useRoute();
-// 获取核销信息
-const getCityInfo = async () => {
+
+// 定义需要显示数据的响应式变量
+const prizeInfo = ref<Record<PrizeKey, PrizeItem>>({
+  prize_1: { check_count: 0, issued_count: 0 },
+  prize_2: { check_count: 0, issued_count: 0 },
+  prize_3: { check_count: 0, issued_count: 0 },
+  prize_4: { check_count: 0, issued_count: 0 },
+  prize_5: { check_count: 0, issued_count: 0 }
+});
+const PRIZE_KEYS: PrizeKey[] = [
+  'prize_1',
+  'prize_2',
+  'prize_3',
+  'prize_4',
+  'prize_5'
+]
+// 获取该城市今天奖品信息
+const getTodayPrizeInfo = async () => {
     // 1. 获取城市参数
     if (route.query.city) {
         console.log(route.query.city);
         const city = route.query.city as string;
         if (cityList.includes(city)) {
             currentCity.value = city;   // 更新城市参数
+            // 2. 拉取城市核销信息
+                const res = await getTodayPrizeInfoAPI({city});
+                console.log("拉取到的今日的奖品信息为：", res);
+                if (res.data.errcode == 0){
+                    PRIZE_KEYS.forEach(key => {
+                        prizeInfo.value[key].check_count = res.data.data.today_info[key]?.check_count ?? 0; 
+                        prizeInfo.value[key].issued_count = res.data.data.today_info[key]?.issued_count ?? 0;
+                    })
+                } else {
+                    console.log("拉取今日奖品信息失败：", res.data.errmsg);
+                }
         } else {
             Toast("城市参数错误");
             return;
@@ -29,14 +57,13 @@ const getCityInfo = async () => {
         Toast("缺少城市参数");
         return;
     }
-    // 2. 拉取城市核销信息
-    const res = await getLuckyNumAPI();
-    console.log(res);
-    if (res.data.errcode == 0){
-        checkNum.value = res.data.data.lucky_num
-    }
 }
-onMounted(() => getCityInfo())
+onMounted(() => getTodayPrizeInfo())
+
+const refreshData = () => {
+    Toast("刷新数据统计中..");
+    getTodayPrizeInfo();
+}
 
 
 // 扫描结果控制
@@ -47,12 +74,11 @@ const checkPrizeData = async (data) => {
     const res = await checkPrizeAPI(data)
     console.log("获取到校验二维码的数据: ", res)
     if (0 == res.data.errcode) {
-        isCorrect.value = res.data.data.check_status
+        isCorrect.value = true;
         checkNum.value = res.data.data.check_num
         pageNum.value = 1
-        if (!res.data.data.check_status){
-            Toast(res.data.data.check_status_msg);
-        }
+    } else {
+        Toast(res.data.errmsg);
     }
 }
 
@@ -88,6 +114,17 @@ function backIndex() {
             <div v-show="currentCity=='zhengzhou'" class="zhengzhou-time-location"></div>
             <!-- 按钮-马上核销 -->
             <div class="btn-start" @click="scanQrCode()"></div>
+            <!-- 今日奖品发放数据展示 -->
+            <div class="prize-container" @click="refreshData">
+                <div class="prize-info" v-for="i in 5" :key="i">
+                    <p>
+                        {{ i }}等奖：
+                        {{ prizeInfo[`prize_${i}`].check_count}}
+                         / 
+                         {{ prizeInfo[`prize_${i}`].issued_count }}
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- 扫描结果页面 -->
@@ -205,14 +242,28 @@ function backIndex() {
         }
         // 马上开始按钮
         .btn-start {
-        position: absolute;
-        bottom: 2.7rem;
-        margin-left: 50%;
-        transform: translateX(-50%);
-        width: 1.5866rem;
-        height: .5733rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/btn-check.png") top center no-repeat;
-        background-size: 100% 100%;
+            position: absolute;
+            bottom: 2.7rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5866rem;
+            height: .5733rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/check/btn-check.png") top center no-repeat;
+            background-size: 100% 100%;
+        }
+        // 今日奖品发放数据展示
+        .prize-container {
+            position: absolute;
+            left: .2rem;
+            bottom: .2rem;
+            display: flex;
+            flex-direction: column;
+            // gap: .1rem; // 每一行的间距
+            .prize-info {
+                width: 2rem;
+                // background-color: pink;
+                color: white;
+            }
         }
     }
 

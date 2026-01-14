@@ -2,7 +2,7 @@ import { httpInstance, wechatHttp } from "../utils/http"
 import type { ResponseType } from "@/types/http"
 import type { WechatJsConfig } from "@/types/wechat"
 import { AxiosResponse } from "axios";
-import type { UserInfo, CheckInfo, StampStatus, RequestDraw, ResposeDraw, ScanCheck, LuckyNum, CheckResult } from "@/types/user";
+import type { UserInfo, CheckInfo, StampStatus, RequestDraw, ResposeDraw, ScanCheck, TodayPrizeInfo, CheckResult } from "@/types/user";
 
 // 获取用户信息
 // export const getUserInfoAPI = (data: UserInfo) => {
@@ -41,7 +41,7 @@ export const stampStatusAPI = (data: CheckInfo): Promise<AxiosResponse<ResponseT
     return httpInstance.post<ResponseType<StampStatus>>('stamp_status', data);
 }
 // 抽奖接口
-export const withdrawAPI = (data: RequestDraw): Promise<AxiosResponse<ResponseType<ResposeDraw>>> => {
+export const withdrawAPI = (data: UserInfo): Promise<AxiosResponse<ResponseType<ResposeDraw>>> => {
     return httpInstance.post<ResponseType<ResposeDraw>>('withdraw', data); // 添加 URL
 }
 
@@ -52,11 +52,11 @@ export const wechatConfigAPI = (data: { url: string }): Promise<AxiosResponse<Re
 }
 // 备用方案扫码打卡
 export const scanCheckAPI = (data: ScanCheck): Promise<AxiosResponse<ResponseType<UserInfo>>> => {
-    return httpInstance.post<ResponseType<UserInfo>>('scan_check')
+    return httpInstance.post<ResponseType<ScanCheck>>('scan_check')
 }
-// 获取核销成功人数
-export const getLuckyNumAPI = (data: { city: string }): Promise<AxiosResponse<ResponseType<LuckyNum>>> => {
-    return httpInstance.post<ResponseType<LuckyNum>>('get_lucky_num')
+// 获取今日礼品情况
+export const getTodayPrizeInfoAPI = (data: { city: string }): Promise<AxiosResponse<ResponseType<TodayPrizeInfo>>> => {
+    return httpInstance.post<ResponseType<TodayPrizeInfo>>('today_prize_info')
 }
 // 核销奖品
 export const checkPrizeAPI = (data: { qr_code: string, city: string }): Promise<AxiosResponse<ResponseType<CheckResult>>> => {

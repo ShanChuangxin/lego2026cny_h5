@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home/index.vue'
 // lego cny
 import Index from '../views/Index/index.vue'
 import Check from '../views/Check/index.vue'
