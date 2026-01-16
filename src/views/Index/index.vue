@@ -16,7 +16,7 @@ const cityCodeList = {
   "guangzhou": "LCS059-MCSZ"
 }
 
-const currentCity = ref("");
+const currentCity = ref("beijing");
 // 定义用户信息
 // let user_id = "";
 // let uqr_code = ""; // 注意这是用户的qrcode，不是打卡页面的qrcode
@@ -854,42 +854,43 @@ const clearUserInfo = async () => {
         height: 100%;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;  // 微信 + ios滚动优化
-        // 隐藏滚动条
-        scrollbar-width: none;  // Firefox
-        -ms-overflow-style: none; // IE / Edge
-        &::-webkit-scrollbar {
-          width: 0;
-          height: 0;
-          display: none;
-        }
+        padding-left: .05rem;
+        // // 隐藏滚动条
+        // scrollbar-width: none;  // Firefox
+        // -ms-overflow-style: none; // IE / Edge
+        // &::-webkit-scrollbar {
+        //   width: 0;
+        //   height: 0;
+        //   display: none;
+        // }
         .beijing-ruler-content {
-          width: 3.6266rem;
-          height: 9.4666rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/beijing-rule-content.png") top center no-repeat;
+          width: 3.52rem;
+          height: 23.04rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/ruler-beijing.png") top center no-repeat;
           background-size: 100% 100%;
         }
         .shanghai-ruler-content {
-          width: 3.6266rem;
-          height: 9.7066rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/shanghai-rule-content.png") top center no-repeat;
+          width: 3.52rem;
+          height: 22.62rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/ruler-shanghai.png") top center no-repeat;
           background-size: 100% 100%;
         }
         .zhengzhou-ruler-content {
-          width: 3.6266rem;
-          height: 9.9466rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/zhengzhou-rule-content.png") top center no-repeat;
+          width: 3.52rem;
+          height: 22.8333rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/ruler-zhengzhou.png") top center no-repeat;
           background-size: 100% 100%;
         }
         .chongqing-ruler-content {
-          width: 3.6266rem;
-          height: 10.0333rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/chongqing-rule-content.png") top center no-repeat;
+          width: 3.52rem;
+          height: 24.3rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/ruler-chongqing.png") top center no-repeat;
           background-size: 100% 100%;
         }
         .guangzhou-ruler-content {
-          width: 3.6266rem;
-          height: 9.7066rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/guangzhou-rule-content.png") top center no-repeat;
+          width: 3.52rem;
+          height: 22.4133rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/ruler/ruler-guangzhou.png") top center no-repeat;
           background-size: 100% 100%;
         }
       }
