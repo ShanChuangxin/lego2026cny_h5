@@ -118,7 +118,6 @@ const wechatScan = async (successFunction) => {
             success: function (res) {
                 var result = res.resultStr; // 当needResult 为 1 时，扫码返回的结果
                 console.log("扫描结果：", result)
-
                 successFunction({ qr_code: result })
             },
             fail: (err) => {

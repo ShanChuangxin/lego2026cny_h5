@@ -1,7 +1,8 @@
 <!-- 工作人员核销奖品 -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { wechatScan } from '@/utils/wechatLibrary';
+// import { wechatScan } from '@/utils/wechatLibrary';
+import { initWechatJSSDK, scanQRCode } from '@/utils/wechatScan'
 import { getTodayPrizeInfoAPI, checkPrizeAPI } from '@/apis/user'
 import { Toast } from 'vant'
 import { useRoute } from 'vue-router'
@@ -59,6 +60,7 @@ const getTodayPrizeInfo = async () => {
 }
 onMounted(() => getTodayPrizeInfo())
 
+
 const refreshData = () => {
     Toast("刷新数据统计中..");
     getTodayPrizeInfo();
@@ -66,31 +68,73 @@ const refreshData = () => {
 
 
 // 扫描结果控制
-const prizeNum = ref(0);
-const checkPrizeData = async (data) => {
-    const res = await checkPrizeAPI(data)
-    console.log("获取到校验二维码的数据: ", res)
-    if (0 == res.data.errcode) {
-        console.log("prizeNum: ", res.data.data.check_num);
-        prizeNum.value = res.data.data.check_num;
-        pageNum.value = 1;
-    } else {
-        prizeNum.value = 0;
-        pageNum.value = 1;
-        Toast(res.data.errmsg);
-    }
-}
+// const checkPrizeData = async (data) => {
+//     const res = await checkPrizeAPI(data)
+//     console.log("获取到校验二维码的数据: ", res)
+//     if (0 == res.data.errcode) {
+//         console.log("prizeNum: ", res.data.data.check_num);
+//         prizeNum.value = res.data.data.check_num;
+//         pageNum.value = 1;
+//     } else {
+//         prizeNum.value = 0;
+//         pageNum.value = 1;
+//         Toast(res.data.errmsg);
+//     }
+// }
 
+// 扫描功能相关
+const prizeNum = ref(0);
+const scanning = ref(false)
+/**
+ * 页面初始化时，只初始化一次微信 JSSDK
+ */
+onMounted(async () => {
+  try {
+    await initWechatJSSDK(['scanQRCode'])
+    console.log('微信 JSSDK 初始化完成')
+  } catch (err) {
+    console.error(err)
+    Toast('微信初始化失败')
+  }
+})
 async function scanQrCode() {
-    console.log("调起扫描");
-    const res = await wechatScan(checkPrizeData);
+    if (scanning.value) {
+        Toast("调起扫描中..");
+        return;
+    }
+    scanning.value = true;
+    try {
+        const result = await scanQRCode();
+        console.log('扫码结果:', result);
+
+        const res = await checkPrizeAPI({ qr_code: result, city: currentCity.value });
+        pageNum.value = 1;
+
+        if (res.data.errcode === 0) {
+            console.log("prizeNum: ", res.data.data.check_num);
+            prizeNum.value = res.data.data.check_num;
+        } else {
+            prizeNum.value = 0;
+            pageNum.value = 1;
+            Toast(res.data.errmsg);
+        }
+    } catch (err) {
+        console.log('扫码取消或失败:', err);
+    } finally {
+        scanning.value = false;
+    }
+
+
+
+    // console.log("调起扫描");
+    // const res = await wechatScan(checkPrizeData);
     // if (0 == res.errcode) {
     //     pageNum.value = 1
     //     console.log(res.result)
     // } else {
     //     console.log(res.errmsg)
     // }
-    console.log("扫描动作完成");
+    // console.log("扫描动作完成");
 }
 
 // 回到主页

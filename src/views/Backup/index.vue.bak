@@ -1,80 +1,68 @@
 <!-- 工作人员备用扫码打卡 -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { initWechatJSSDK, scanQRCode } from '@/utils/wechatScan'
+import { wechatScan } from '@/utils/wechatLibrary';
 import { scanCheckAPI } from '@/apis/user'
 import { Toast } from 'vant'
-
+// 定义页面
 const pageNum = ref(0)
-const isCorrect = ref(false)
-const scanning = ref(false)
 
-/**
- * 页面初始化时，只初始化一次微信 JSSDK
- */
-onMounted(async () => {
-  try {
-    await initWechatJSSDK(['scanQRCode']);
-    console.log('微信 JSSDK 初始化完成');
-  } catch (err) {
-    console.error(err);
-    Toast('微信初始化失败');
-  }
-})
+// 扫描结果控制
+const isCorrect = ref(false)    // 是否备用打卡成功
+const checkPrizeData = async (data) => {
+    console.log("data:", data)
+    const res = await scanCheckAPI(data)
+    console.log("获取到校验二维码的数据: ", res)
+    pageNum.value = 1
+    if (0 == res.data.errcode) {
+        isCorrect.value = true;
+    } else {
+        isCorrect.value = false;
+        Toast(res.data.errmsg);
+    }
+}
 
 async function scanQrCode() {
-  if (scanning.value) {
-        Toast("调起扫描中..");
-        return;
-    }
-  scanning.value = true;
-
-  try {
-    const result = await scanQRCode();
-    console.log('扫码结果:', result);
-
-    const res = await scanCheckAPI({ qr_code: result });
-    pageNum.value = 1;
-
-    if (res.data.errcode === 0) {
-      isCorrect.value = true;
-    } else {
-      isCorrect.value = false;
-      Toast(res.data.errmsg);
-    }
-  } catch (err) {
-    console.log('扫码取消或失败:', err);
-  } finally {
-    scanning.value = false;
-  }
+    console.log("调起扫描")
+    const res = await wechatScan(checkPrizeData)
+    console.log("扫描动作完成")
 }
 
+// 回到主页
 function backIndex() {
-  isCorrect.value = false;
-  pageNum.value = 0;
+    isCorrect.value = false
+    pageNum.value = 0
 }
+
 </script>
 
 <template>
-  <div class="page-body">
-    <div v-show="pageNum === 0" class="land-page">
-      <div class="btn-start" @click="scanQrCode"></div>
+    <div class="page-body">
+        <!-- 起始页面 -->
+        <div v-show="pageNum==0" class="land-page">
+            <!-- 按钮-马上打卡 -->
+            <div class="btn-start" @click="scanQrCode()"></div>
+        </div>
+
+        <!-- 扫描结果页面 -->
+        <div v-show="pageNum==1" class="check-result">
+            <!-- 马花纹装饰 -->
+            <div class="figure-horse"></div>
+            <!-- icon和slogan -->
+            <div class="icon-slogan"></div>
+            <!-- 弹窗 -->
+            <div class="pop-window">
+                <!-- 打卡成功 -->
+                <div v-if="isCorrect" class="success"></div>
+                <!-- 打卡失败 -->
+                <div v-else class="fail"></div>
+               
+            </div>
+            <!-- 确定按钮 -->
+            <div class="btn-sure" @click="backIndex"></div>
+        </div>
     </div>
-
-    <div v-show="pageNum === 1" class="check-result">
-      <div class="figure-horse"></div>
-      <div class="icon-slogan"></div>
-
-      <div class="pop-window">
-        <div v-if="isCorrect" class="success"></div>
-        <div v-else class="fail"></div>
-      </div>
-
-      <div class="btn-sure" @click="backIndex"></div>
-    </div>
-  </div>
 </template>
-
 
 <style lang="scss" scoped>
 .page-body {
