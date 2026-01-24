@@ -212,6 +212,7 @@ function navitageToLuckyDrawPage(){
 
 // 抽奖页面相关功能
 const alreadyLucyDraw = ref(false);  // 是否已经抽奖
+const prizeNum = ref(0);  // 抽到的几等奖，0为起始值，1-5为五等奖，6为谢谢参与（仅限重庆和广州）
 const rotateDeg = ref(0); // 旋转角度
 const isSpinning = ref(false);  // 是否开始旋转
 // const canEnd = ref(false);  // 旋转结束回调状态锁
@@ -229,7 +230,6 @@ const cityNorth = ref(["beijing", "shanghai", "zhengzhou"]);
 const citySouth = ref(["chongqing", "guangzhou"]);
 const TOTAL = 9;  // 转盘总共平均分成了9个部分
 const ANGLE_PER = 360 / TOTAL;  // 每个部分所占角度：40
-const prizeNum = ref(0);  // 抽到的几等奖，0为起始值，1-5为五等奖，6为谢谢参与（仅限重庆和广州）
 
 // 北京、上海、郑州游戏转盘布局
 // '一等奖', // 0
@@ -322,6 +322,7 @@ function onSpinEnd(e: TransitionEvent) {
 
 // 清除用户打信息并回到主页
 const clearUserInfo = async () => {
+  return;
   console.log("清除用户信息并回到主页");
   // 1. 向服务器请求清除打卡和抽奖信息
   const res = await clearDrawInfoAPI({user_id: userInfo.value.user_id})
@@ -519,196 +520,219 @@ const clearUserInfo = async () => {
       <div class="btn-luckydraw" @click="draw"></div>
       <!-- 弹窗容器 -->
       <div v-show="alreadyLucyDraw" class="pop-container" @click="clearUserInfo()">
-        <!-- 北京中奖弹窗 -->
-        <div v-show="currentCity=='beijing' && prizeNum == 1" class="beijing-prize-1">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+        <div class="content-container">
+          <!-- 北京中奖弹窗 -->
+          <div v-if="currentCity=='beijing' && prizeNum == 1" class="beijing-prize-1">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='beijing' && prizeNum == 2" class="beijing-prize-2">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='beijing' && prizeNum == 2" class="beijing-prize-2">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='beijing' && prizeNum == 3" class="beijing-prize-3">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='beijing' && prizeNum == 3" class="beijing-prize-3">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='beijing' && prizeNum == 4" class="beijing-prize-4">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='beijing' && prizeNum == 4" class="beijing-prize-4">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='beijing' && prizeNum == 5" class="beijing-prize-5">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='beijing' && prizeNum == 5" class="beijing-prize-5">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
 
-        <!-- 上海中奖弹窗 -->
-        <div v-show="currentCity=='shanghai' && prizeNum == 1" class="shanghai-prize-1">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <!-- 上海中奖弹窗 -->
+          <div v-if="currentCity=='shanghai' && prizeNum == 1" class="shanghai-prize-1">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='shanghai' && prizeNum == 2" class="shanghai-prize-2">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='shanghai' && prizeNum == 2" class="shanghai-prize-2">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='shanghai' && prizeNum == 3" class="shanghai-prize-3">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='shanghai' && prizeNum == 3" class="shanghai-prize-3">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='shanghai' && prizeNum == 4" class="shanghai-prize-4">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='shanghai' && prizeNum == 4" class="shanghai-prize-4">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='shanghai' && prizeNum == 5" class="shanghai-prize-5">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='shanghai' && prizeNum == 5" class="shanghai-prize-5">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
 
-        <!-- 郑州中奖弹窗 -->
-        <div v-show="currentCity=='zhengzhou' && prizeNum == 1" class="zhengzhou-prize-1">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <!-- 郑州中奖弹窗 -->
+          <div v-if="currentCity=='zhengzhou' && prizeNum == 1" class="zhengzhou-prize-1">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='zhengzhou' && prizeNum == 2" class="zhengzhou-prize-2">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='zhengzhou' && prizeNum == 2" class="zhengzhou-prize-2">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='zhengzhou' && prizeNum == 3" class="zhengzhou-prize-3">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='zhengzhou' && prizeNum == 3" class="zhengzhou-prize-3">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='zhengzhou' && prizeNum == 4" class="zhengzhou-prize-4">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='zhengzhou' && prizeNum == 4" class="zhengzhou-prize-4">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='zhengzhou' && prizeNum == 5" class="zhengzhou-prize-5">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='zhengzhou' && prizeNum == 5" class="zhengzhou-prize-5">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
 
-        <!-- 重庆中奖弹窗 -->
-        <div v-show="currentCity=='chongqing' && prizeNum == 1" class="chongqing-prize-1">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <!-- 重庆中奖弹窗 -->
+          <div v-if="currentCity=='chongqing' && prizeNum == 1" class="chongqing-prize-1">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='chongqing' && prizeNum == 2" class="chongqing-prize-2">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='chongqing' && prizeNum == 2" class="chongqing-prize-2">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='chongqing' && prizeNum == 3" class="chongqing-prize-3">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='chongqing' && prizeNum == 3" class="chongqing-prize-3">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='chongqing' && prizeNum == 4" class="chongqing-prize-4">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='chongqing' && prizeNum == 4" class="chongqing-prize-4">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='chongqing' && prizeNum == 5" class="chongqing-prize-5">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <div v-if="currentCity=='chongqing' && prizeNum == 5" class="chongqing-prize-5">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
           </div>
-        </div>
-        <div v-show="currentCity=='chongqing' && prizeNum == 6" class="chongqing-prize-6"></div>
+          <div v-if="currentCity=='chongqing' && prizeNum == 6" class="chongqing-prize-6"></div>
 
-        <!-- 广州中奖弹窗 -->
-        <div v-show="currentCity=='guangzhou' && prizeNum == 1" class="guangzhou-prize-1">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+          <!-- 广州中奖弹窗 -->
+          <div v-if="currentCity=='guangzhou' && prizeNum == 1" class="guangzhou-prize-1">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
+          </div>
+          <div v-if="currentCity=='guangzhou' && prizeNum == 2" class="guangzhou-prize-2">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
+          </div>
+          <div v-if="currentCity=='guangzhou' && prizeNum == 3" class="guangzhou-prize-3">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
+          </div>
+          <div v-if="currentCity=='guangzhou' && prizeNum == 4" class="guangzhou-prize-4">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
+          </div>
+          <div v-if="currentCity=='guangzhou' && prizeNum == 5" class="guangzhou-prize-5">
+            <div class="tips"></div>
+            <!-- 显示当前打卡点的二维码 -->
+            <div class="qrcode-area">
+                <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
+            </div>
+          </div>
+          <div v-if="currentCity=='guangzhou' && prizeNum == 6" class="guangzhou-prize-6"></div>
+
+          <div class="tips-container">
+            <div v-if="currentCity=='beijing'" class="beijing-tips">
+              <div>中奖奖品以实际库存为准</div>
+              <div>奖品核销地址：北京荟聚中心LCS016-HTD乐高门店</div>
+            </div>
+            <div v-if="currentCity=='shanghai'" class="shanghai-tips">
+              <div>中奖奖品以实际库存为准</div>
+              <div>奖品核销地址：环贸iapm商场 LG1-161乐高门店</div>
+            </div>
+            <div v-if="currentCity=='zhengzhou'" class="zhengzhou-tips">
+              <div>中奖奖品以实际库存为准</div>
+              <div>奖品核销地址：郑州正弘城L319乐高门店</div>
+            </div>
+            <div v-if="currentCity=='chongqing' && prizeNum != 6" class="chongqing-tips">
+              <div>中奖奖品以实际库存为准</div>
+              <div>奖品核销地址：重庆来福士01-108/02-113乐高品牌旗舰店</div>
+            </div>
+            <div v-if="currentCity=='guangzhou' && prizeNum != 6" class="guangzhou-tips">
+              <div>中奖奖品以实际库存为准</div>
+              <div>奖品核销地址：广州凯德乐峰广场B1层-S35乐高门店</div>
+            </div>
           </div>
         </div>
-        <div v-show="currentCity=='guangzhou' && prizeNum == 2" class="guangzhou-prize-2">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
-          </div>
-        </div>
-        <div v-show="currentCity=='guangzhou' && prizeNum == 3" class="guangzhou-prize-3">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
-          </div>
-        </div>
-        <div v-show="currentCity=='guangzhou' && prizeNum == 4" class="guangzhou-prize-4">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
-          </div>
-        </div>
-        <div v-show="currentCity=='guangzhou' && prizeNum == 5" class="guangzhou-prize-5">
-          <div class="tips"></div>
-          <!-- 显示当前打卡点的二维码 -->
-          <div class="qrcode-area">
-              <vue-qr :text="userQrCode" :size="userQrCodeSize" :margin="userQrCodeMargin"></vue-qr>
-          </div>
-        </div>
-        <div v-show="currentCity=='guangzhou' && prizeNum == 6" class="guangzhou-prize-6"></div>
       </div>
     </div>
-    
-  
   </div>
 
 </template>
@@ -1054,7 +1078,8 @@ const clearUserInfo = async () => {
       }
       .btn-draw {
         position: absolute;
-        top: 8rem;
+        // top: 8rem;
+        bottom: .8rem;
         margin-left: 50%;
         transform: translateX(-50%);
         width: 2.1866rem;
@@ -1202,7 +1227,8 @@ const clearUserInfo = async () => {
     }
     .btn-back {
       position: absolute;
-      top: 8.5rem;
+      // top: 8.5rem;
+      bottom: .8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.5866rem;
@@ -1394,7 +1420,8 @@ const clearUserInfo = async () => {
     }
     .btn-luckydraw {
       position: absolute;
-      top: 7.5rem;
+      // top: 7.5rem;
+      bottom: .8rem;
       margin-left: 50%;
       transform: translateX(-50%);
       width: 1.58rem;
@@ -1413,748 +1440,792 @@ const clearUserInfo = async () => {
       justify-content: center;
       align-items: center;
       padding: 0;
-      // 北京不同的礼物弹窗
-      .beijing-prize-1 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.9533rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-1.png") top center no-repeat;
-          background-size: 100% 100%;
+      .content-container {
+        width: 5.0133rem;
+        // background-color: pink;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        // 北京不同的礼物弹窗
+        .beijing-prize-1 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.9533rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-1.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
         }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
+        .beijing-prize-2 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5733rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-2.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .beijing-prize-3 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.72rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-3.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .beijing-prize-4 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5066rem;
+            height: .9533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-4.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .beijing-prize-5 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.9266rem;
+            height: 1.0533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-5.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        // 上海礼物弹窗
+        .shanghai-prize-1 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.9533rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-1.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .shanghai-prize-2 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5733rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-2.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .shanghai-prize-3 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.72rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-3.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .shanghai-prize-4 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5066rem;
+            height: .9533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-4.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .shanghai-prize-5 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.9466rem;
+            height: 1.0533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-5.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        // 郑州礼物弹窗
+        .zhengzhou-prize-1 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.8133rem;
+            height: 1.1533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-1.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .zhengzhou-prize-2 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.7333rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-2.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .zhengzhou-prize-3 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.72rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-3.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .zhengzhou-prize-4 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5066rem;
+            height: .9533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-4.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .zhengzhou-prize-5 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.62rem;
+            height: 1.0533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-5.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        // 重庆礼物弹窗
+        .chongqing-prize-1 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.9533rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-1.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .chongqing-prize-2 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5733rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-2.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .chongqing-prize-3 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.72rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-3.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .chongqing-prize-4 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5066rem;
+            height: .9533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-4.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .chongqing-prize-5 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.4666rem;
+            height: .9466rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-5.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .chongqing-prize-6 {
+          width: 2.9066rem;
+          height: 2.2733rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-6.png") top center no-repeat;
+          background-size: 100% 100%; 
+        }
+        // 广州礼物弹窗
+        .guangzhou-prize-1 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.72rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-1.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .guangzhou-prize-2 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.7466rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-2.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .guangzhou-prize-3 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.72rem;
+            height: 1.1266rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-3.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .guangzhou-prize-4 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 1.5066rem;
+            height: .9533rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-4.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .guangzhou-prize-5 {
+          position: relative;
+          width: 4.0133rem;
+          height: 5.8666rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
+          background-size: 100% 100%; 
+          .tips {
+            position: absolute;
+            top: 1rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 2.4266rem;
+            height: .96rem;
+            background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-5.png") top center no-repeat;
+            background-size: 100% 100%;
+          }
+          .qrcode-area {
+            position: absolute;
+            top: 2.25rem;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 3.1rem;
+            height: 3.1rem;
+            // background-color: rgba(255, 0, 0, .5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        .guangzhou-prize-6 {
+          width: 2.9066rem;
+          height: 2.2733rem;
+          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-6.png") top center no-repeat;
+          background-size: 100% 100%; 
+        }
+
+        .tips-container {
+          margin-top: .3rem;
+          color: white;
+          font-size: .19rem;
+          .beijing-tips {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .shanghai-tips {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .zhengzhou-tips {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .chongqing-tips {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .guangzhou-tips {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
         }
       }
-      .beijing-prize-2 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5733rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-2.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .beijing-prize-3 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.72rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-3.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .beijing-prize-4 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5066rem;
-          height: .9533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-4.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .beijing-prize-5 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.9266rem;
-          height: 1.0533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bj-prize-5.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      // 上海礼物弹窗
-      .shanghai-prize-1 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.9533rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-1.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .shanghai-prize-2 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5733rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-2.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .shanghai-prize-3 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.72rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-3.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .shanghai-prize-4 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5066rem;
-          height: .9533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-4.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .shanghai-prize-5 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.9466rem;
-          height: 1.0533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/sh-prize-5.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      // 郑州礼物弹窗
-      .zhengzhou-prize-1 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.8133rem;
-          height: 1.1533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-1.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .zhengzhou-prize-2 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.7333rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-2.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .zhengzhou-prize-3 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.72rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-3.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .zhengzhou-prize-4 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5066rem;
-          height: .9533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-4.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .zhengzhou-prize-5 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.62rem;
-          height: 1.0533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-5.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      // 重庆礼物弹窗
-      .chongqing-prize-1 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.9533rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-1.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .chongqing-prize-2 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5733rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-2.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .chongqing-prize-3 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.72rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-3.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .chongqing-prize-4 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5066rem;
-          height: .9533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-4.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .chongqing-prize-5 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.4666rem;
-          height: .9466rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-5.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .chongqing-prize-6 {
-        width: 2.9066rem;
-        height: 2.2733rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/cq-prize-6.png") top center no-repeat;
-        background-size: 100% 100%; 
-      }
-      // 广州礼物弹窗
-      .guangzhou-prize-1 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.72rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-1.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .guangzhou-prize-2 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.7466rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-2.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .guangzhou-prize-3 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.72rem;
-          height: 1.1266rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-3.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .guangzhou-prize-4 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 1.5066rem;
-          height: .9533rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-4.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .guangzhou-prize-5 {
-        position: relative;
-        width: 4.0133rem;
-        height: 5.8666rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/bg-pop-prize.png") top center no-repeat;
-        background-size: 100% 100%; 
-        .tips {
-          position: absolute;
-          top: 1rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 2.4266rem;
-          height: .96rem;
-          background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-5.png") top center no-repeat;
-          background-size: 100% 100%;
-        }
-        .qrcode-area {
-          position: absolute;
-          top: 2.25rem;
-          margin-left: 50%;
-          transform: translateX(-50%);
-          width: 3.1rem;
-          height: 3.1rem;
-          // background-color: rgba(255, 0, 0, .5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .guangzhou-prize-6 {
-        width: 2.9066rem;
-        height: 2.2733rem;
-        background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/gz-prize-6.png") top center no-repeat;
-        background-size: 100% 100%; 
-      }
+      
     }
   }
 }
