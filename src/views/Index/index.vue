@@ -74,7 +74,7 @@ const loadUserInfo = async () => {
               console.log("已抽过奖，跳转到抽奖结果页面");
               // 1. 更新中奖弹窗信息
               alreadyLucyDraw.value = true; // 打开中奖弹窗
-              if (userInfo.value.prize_code == 6 && (currentCity.value == "chongqing" || currentCity.value == "guangzhou")){
+              if (userInfo.value.prize_code == 6 && currentCity.value != "chongqing" && currentCity.value != "guangzhou"){
                 prizeNum.value = 5; // 防止重庆或者广州的人中了无限量奖，又跑到了北方城市，直接升一等级（防止北方城市的UI没有6这个奖项）
               } else {
                 prizeNum.value = userInfo.value.prize_code;// 更新中奖结果, 弹窗内容
@@ -286,7 +286,7 @@ async function draw() {
   }
   // prizeNum.value = 1;  // mock
   // 向服务器请求抽奖结果
-  const res = await withdrawAPI({user_id: userInfo.value.user_id, city: userInfo.value.city});
+  const res = await withdrawAPI({user_id: userInfo.value.user_id, city: currentCity.value});  // 注意，这是城只能用网页的城市，不能用用户首次登录的城市
   console.log("获取的抽奖结果为：", res);
   if (0 == res.data.errcode) {
     prizeNum.value = res.data.data.prize_code;
@@ -300,10 +300,13 @@ async function draw() {
 
   let indexList = [];
   // 从该奖项的多个位置中随机一个
+  console.log("当前城市：", currentCity.value);
   if (cityNorth.value.includes(currentCity.value)){
     indexList = prizeIndexMapBjShZz[prizeNum.value - 1]; // 北方城市索引列表
+    console.log("北方城市：", indexList);
   } else {
     indexList = prizeIndexMapCqGz[prizeNum.value - 1]; // 南方城市索引列表
+    console.log("南方城市：", indexList);
   }
   const prizeIndex = randomFromArray(indexList);  // 从该奖项列表里随机出转盘对应的某个索引
   console.log("当前奖项所在转盘中的索引列表为：", indexList);
