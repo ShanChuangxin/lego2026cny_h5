@@ -16,7 +16,7 @@ const cityCodeList = {
   "guangzhou": "LCS059-MCSZ"
 }
 
-const currentCity = ref("beijing");
+const currentCity = ref("");
 // 定义用户信息
 // let user_id = "";
 // let uqr_code = ""; // 注意这是用户的qrcode，不是打卡页面的qrcode
@@ -45,7 +45,8 @@ const loadUserInfo = async () => {
         } else if (cityCode == cityCodeList["guangzhou"]) {
           currentCity.value = "guangzhou";
         } else {
-          Toast("城市参数错误");
+          Toast("城市参数错误:" + cityCode);
+          return;
         }
         const auth_code = route.query.authCode as string;
         console.log("auth_code: ", auth_code);
@@ -104,6 +105,11 @@ const pageNum = ref(0)
 function navigateToPage(page) {
   // Toast("敬请期待");
   // return;
+  // 如果参数错误，则不进行跳转
+  if (page <= 2 && (!currentCity.value || !userInfo.value.user_id)){
+    Toast("参数错误，请重新进入页面");
+    return;
+  }
   pageNum.value = page;
 }
 
@@ -323,6 +329,12 @@ function onSpinEnd(e: TransitionEvent) {
   alreadyLucyDraw.value = true;
 }
 
+// debug信息
+const isShowDebug = ref(false);
+// 切换显示隐藏debug信息
+const showDebugInfo = () => {
+  isShowDebug.value = !isShowDebug.value;
+}
 // 清除用户打信息并回到主页
 const clearUserInfo = async () => {
   return;
@@ -364,10 +376,17 @@ const clearUserInfo = async () => {
       <div v-show="currentCity=='guangzhou'" class="guangzhou-time-location"></div>
       <div v-show="currentCity=='chongqing'" class="chongqing-time-location"></div>
       <div v-show="currentCity=='zhengzhou'" class="zhengzhou-time-location"></div>
+      <!-- 隐藏按钮-显示debug信息 -->
+      <div class="btn-debug" @click="showDebugInfo()"></div>
       <!-- 按钮-马上开始 -->
       <div class="btn-start" @click="navigateToPage(2)"></div>
       <!-- 活动规则超链接 -->
       <div class="link-ruler" @click="navigateToPage(1)"></div>
+      <!-- debug信息 -->
+      <div v-show="isShowDebug" class="land-debug-info">
+        <div>city: {{ route.query?.utmChannel_var }}</div>
+        <div>user_id: {{ userInfo?.user_id }}</div>
+      </div>
     </div>
 
     <!-- 活动规则页面 -->
@@ -710,8 +729,8 @@ const clearUserInfo = async () => {
             </div>
           </div>
           <div v-if="currentCity=='guangzhou' && prizeNum == 6" class="guangzhou-prize-6"></div>
-
-          <div class="tips-container">
+          <!-- 领取奖品tips -->
+          <div class="tips-container" @click="showDebugInfo()">
             <div v-if="currentCity=='beijing'" class="beijing-tips">
               <div>中奖奖品以实际库存为准</div>
               <div>奖品核销地址：北京荟聚中心LCS016-HTD乐高门店</div>
@@ -733,6 +752,11 @@ const clearUserInfo = async () => {
               <div>奖品核销地址：广州凯德乐峰广场B1层-S35乐高门店</div>
             </div>
           </div>
+        </div>
+        <!-- debug信息 -->
+        <div v-show="isShowDebug" class="debug-info">
+          <div>city: {{ route.query?.utmChannel_var }}</div>
+          <div>user_id: {{ userInfo?.user_id }}</div>
         </div>
       </div>
     </div>
@@ -805,6 +829,16 @@ const clearUserInfo = async () => {
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/zhengzhou-time-location.png") top center no-repeat;
       background-size: 100% 100%;
     }
+    // 隐藏按钮-显示debug信息
+    .btn-debug {
+      position: absolute;
+      margin-top: 1.7rem;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      width: 1rem;
+      height: 1rem;
+      // background-color: pink;
+    }
     // 马上开始按钮
     .btn-start {
       position: absolute;
@@ -826,6 +860,13 @@ const clearUserInfo = async () => {
       height: .1466rem;
       background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/index/link-ruler.png") top center no-repeat;
       background-size: 100% 100%;
+    }
+    // debug信息
+    .land-debug-info {
+      position: absolute;
+      left: 0;
+      bottom: 0rem;
+      color: white;
     }
   }
 
@@ -1750,11 +1791,11 @@ const clearUserInfo = async () => {
           background-size: 100% 100%; 
           .tips {
             position: absolute;
-            top: 1rem;
+            top: 1.2rem;
             margin-left: 50%;
             transform: translateX(-50%);
-            width: 2.8133rem;
-            height: 1.1533rem;
+            width: 1.5733rem;
+            height: .54rem;
             background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-1.png") top center no-repeat;
             background-size: 100% 100%;
           }
@@ -1779,11 +1820,11 @@ const clearUserInfo = async () => {
           background-size: 100% 100%; 
           .tips {
             position: absolute;
-            top: 1rem;
+            top: 1.2rem;
             margin-left: 50%;
             transform: translateX(-50%);
-            width: 2.7333rem;
-            height: 1.1266rem;
+            width: 1.5733rem;
+            height: .54rem;
             background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-2.png") top center no-repeat;
             background-size: 100% 100%;
           }
@@ -1808,11 +1849,11 @@ const clearUserInfo = async () => {
           background-size: 100% 100%; 
           .tips {
             position: absolute;
-            top: 1rem;
+            top: 1.2rem;
             margin-left: 50%;
             transform: translateX(-50%);
-            width: 1.72rem;
-            height: 1.1266rem;
+            width: 1.5733rem;
+            height: .54rem;
             background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-3.png") top center no-repeat;
             background-size: 100% 100%;
           }
@@ -1837,11 +1878,11 @@ const clearUserInfo = async () => {
           background-size: 100% 100%; 
           .tips {
             position: absolute;
-            top: 1rem;
+            top: 1.2rem;
             margin-left: 50%;
             transform: translateX(-50%);
-            width: 1.5066rem;
-            height: .9533rem;
+            width: 1.5733rem;
+            height: .54rem;
             background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-4.png") top center no-repeat;
             background-size: 100% 100%;
           }
@@ -1866,11 +1907,11 @@ const clearUserInfo = async () => {
           background-size: 100% 100%; 
           .tips {
             position: absolute;
-            top: 1rem;
+            top: 1.2rem;
             margin-left: 50%;
             transform: translateX(-50%);
-            width: 1.62rem;
-            height: 1.0533rem;
+            width: 1.5733rem;
+            height: .54rem;
             background: url("https://www.mbcstyle.cn/projects/lego2026cny/images/draw/zz-prize-5.png") top center no-repeat;
             background-size: 100% 100%;
           }
@@ -2227,6 +2268,12 @@ const clearUserInfo = async () => {
             justify-content: center;
           }
         }
+      }
+      .debug-info {
+        position: absolute;
+        left: 0;
+        bottom: 0rem;
+        color: white;
       }
       
     }
